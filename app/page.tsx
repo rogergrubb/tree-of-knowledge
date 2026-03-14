@@ -10,19 +10,7 @@ import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
 import { loadProgress, saveProgress, loadExploredNodes, saveExploredNode, loadBookmarks, saveBookmark, removeBookmark } from './lib/storage'
 
 interface UserProgress { nodesExplored: number; deepestLevel: number; lastExplored: string; sessions: number }
-
-// Generous free tier — 50 AI generation calls before any gate
-// That's roughly 50 branches explored deeply, which is A LOT of engagement
-const FREE_AI_CALLS = 50
-
 function countAll(n: KnowledgeNode): number { let c = 1; if (n.children) n.children.forEach(ch => c += countAll(ch)); return c }
-
-function loadAiCallCount(): number {
-  try { return parseInt(localStorage.getItem('tok_ai_calls') || '0', 10) } catch { return 0 }
-}
-function incrementAiCallCount(): number {
-  try { const n = loadAiCallCount() + 1; localStorage.setItem('tok_ai_calls', String(n)); return n } catch { return 0 }
-}
 
 export default function Home() {
   const [navStack, setNavStack] = useState<KnowledgeNode[]>([SEED_TREE])
@@ -33,7 +21,6 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
   const [showDepthChallenge, setShowDepthChallenge] = useState(false)
-  const [showAccountPrompt, setShowAccountPrompt] = useState(false)
   const [progress, setProgress] = useState<UserProgress>({ nodesExplored: 0, deepestLevel: 0, lastExplored: '', sessions: 1 })
   const [exploredNodes, setExploredNodes] = useState<Set<string>>(new Set())
   const [bookmarks, setBookmarks] = useState<string[]>([])
@@ -54,20 +41,12 @@ export default function Home() {
   const drillInto = useCallback(async (node: KnowledgeNode) => {
     markExplored(node.name)
     if (!node.children || node.children.length === 0) {
-      // Check if they've used up their free AI calls
-      const callCount = loadAiCallCount()
-      if (callCount >= FREE_AI_CALLS) {
-        // Show a gentle account creation prompt — no money mentioned
-        setShowAccountPrompt(true)
-        return
-      }
-
-      if (generatingRef.current) return; generatingRef.current = true; setIsGenerating(true)
+      if (generatingRef.current) return
+      generatingRef.current = true; setIsGenerating(true)
       try {
         const path = [...navStack.map(n => n.name), node.name]
         node.children = await generateSubtopics(node.name, node.desc || '', path)
         node._aiGenerated = true
-        incrementAiCallCount()
         setTotalNodes(countAll(SEED_TREE))
       }
       catch { node.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: '⚠️' }] }
@@ -113,51 +92,6 @@ export default function Home() {
       {selectedNode && <WikiPanel node={selectedNode} content={wikiContent} loading={wikiLoading} isBookmarked={bookmarks.includes(selectedNode.name)} onBookmark={() => toggleBookmark(selectedNode.name)} onDrillInto={drillInto} onWikiLink={handleWikiLink} onClose={() => { setSelectedNode(null); setWikiContent(null) }} depth={depth} currentChildren={currentNode.children || []} />}
       {showSidebar && <Sidebar progress={progress} exploredNodes={exploredNodes} bookmarks={bookmarks} deepestLevel={deepestLevel} totalNodes={totalNodes} onClose={() => setShowSidebar(false)} onNavigateBookmark={() => setShowSidebar(false)} />}
       {showDepthChallenge && <DepthChallenge depth={depth} nodesExplored={exploredNodes.size} onClose={() => setShowDepthChallenge(false)} onKeepGoing={() => setShowDepthChallenge(false)} />}
-
-      {/* Account creation prompt — only appears after 50 AI-generated branches */}
-      {/* No mention of price, payment, or subscription. Just: create an account to keep going + sync across devices */}
-      {showAccountPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setShowAccountPrompt(false)} />
-          <div className="relative bg-[#12121a] border border-white/8 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-40 h-40 bg-[#d4a853]/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="text-center relative">
-              <div className="text-4xl mb-3">🌳</div>
-              <h3 className="font-bold text-[#f0ece4] text-xl mb-2" style={{ fontFamily: "'Lora', serif" }}>
-                You are a true explorer
-              </h3>
-              <p className="text-[13px] text-white/40 mb-5 leading-relaxed">
-                You have explored deeper than most people ever will. Create a free account to save your journey, pick up from any device, and keep growing the tree.
-              </p>
-              <div className="bg-white/[0.02] rounded-xl p-4 mb-5 border border-white/[0.04] text-left space-y-2">
-                {[
-                  '🌱 Keep exploring — unlimited branches ahead',
-                  '☁ Pick up where you left off on any device',
-                  '★ Your bookmarks and progress, saved forever',
-                  '📊 See your exploration stats and achievements'
-                ].map((item, i) => (
-                  <div key={i} className="text-[12px] text-white/50 flex items-start gap-2">
-                    <span className="text-[11px] mt-0.5">{item.slice(0, 2)}</span>
-                    <span>{item.slice(2)}</span>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setShowAccountPrompt(false)}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d4a853] to-[#e8c56a] text-[#0c0c0e] font-bold text-sm hover:opacity-90 transition-opacity mb-2.5"
-              >
-                Create Free Account
-              </button>
-              <button
-                onClick={() => setShowAccountPrompt(false)}
-                className="text-[11px] text-white/20 hover:text-white/40 transition-colors"
-              >
-                Not now — let me keep exploring
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
