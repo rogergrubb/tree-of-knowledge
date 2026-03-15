@@ -39,7 +39,9 @@ export function TreeCanvas({
   const rootNodesRef = useRef<KnowledgeNode[]>([])
 
   const layout = useCallback(() => {
-    const W = window.innerWidth, H = window.innerHeight
+    const container = canvasRef.current?.parentElement
+    const W = container ? container.clientWidth : window.innerWidth
+    const H = container ? container.clientHeight : window.innerHeight
     const gY = H * 0.58, cx = W / 2
     const bNodes: KnowledgeNode[] = []
     const rNodes: KnowledgeNode[] = []
@@ -116,7 +118,9 @@ export function TreeCanvas({
     if (!canvas) return
     const c = canvas.getContext('2d')
     if (!c) return
-    const W = window.innerWidth, H = window.innerHeight
+    const container = canvas.parentElement
+    const W = container ? container.clientWidth : window.innerWidth
+    const H = container ? container.clientHeight : window.innerHeight
     const dpr = Math.min(devicePixelRatio, 2)
     canvas.width = W * dpr; canvas.height = H * dpr
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px'
@@ -394,17 +398,14 @@ export function TreeCanvas({
   const handleClick = useCallback((e: React.MouseEvent) => {
     const hit = hitTest(e.clientX, e.clientY)
     if (hit) {
-      onHoverNode(hit)
-      if (hit.children?.length || !hit._aiGenerated) {
-        onDrillInto(hit)
-      }
+      onDrillInto(hit)
     }
-  }, [hitTest, onDrillInto, onHoverNode])
+  }, [hitTest, onDrillInto])
 
   return (
     <canvas
       ref={canvasRef}
-      className="block fixed top-0 left-0"
+      className="block w-full h-full"
       onMouseMove={handleMouseMove}
       onClick={handleClick}
     />
