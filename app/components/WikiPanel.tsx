@@ -90,9 +90,26 @@ export function WikiPanel({ node, content, loading, isBookmarked, onBookmark, on
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="text-2xl mb-3 animate-pulse">📖</div>
-              <div className="text-[12px] text-white/30">Generating article...</div>
+            <div className="flex flex-col items-center justify-center py-12">
+              {/* Animated thinking spinner */}
+              <div className="relative w-16 h-16 mb-4">
+                {/* Outer ring */}
+                <svg className="w-16 h-16 animate-spin" style={{ animationDuration: '3s' }} viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(212,168,83,0.12)" strokeWidth="2" />
+                  <path d="M32 4 a28 28 0 0 1 28 28" fill="none" stroke="#d4a853" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                {/* Inner ring — opposite direction */}
+                <svg className="absolute inset-0 w-16 h-16 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="18" fill="none" stroke="rgba(212,168,83,0.08)" strokeWidth="1.5" />
+                  <path d="M32 14 a18 18 0 0 1 18 18" fill="none" stroke="rgba(240,216,136,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                {/* Center dot pulse */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-[#d4a853]/40 animate-pulse" />
+                </div>
+              </div>
+              <div className="text-[12px] text-white/30 font-medium">Exploring this topic...</div>
+              <div className="text-[10px] text-white/15 mt-1">AI is writing an article</div>
             </div>
           ) : content ? (
             <div className="text-[13px] text-[#c0bab0] leading-[1.7] space-y-3">
