@@ -11,6 +11,7 @@ interface TreeCanvasProps {
   onDrillInto: (node: KnowledgeNode) => void
   onHoverNode: (node: KnowledgeNode | null) => void
   isGenerating: boolean
+  loadingNode: KnowledgeNode | null
   exploredNodes: Set<string>
   depth: number
 }
@@ -29,7 +30,7 @@ function getHue(node: KnowledgeNode, navStack: KnowledgeNode[]): { h: number, s:
 
 export function TreeCanvas({
   branches, roots, isTreeView, currentNode, navStack,
-  onDrillInto, onHoverNode, isGenerating, exploredNodes, depth
+  onDrillInto, onHoverNode, isGenerating, loadingNode, exploredNodes, depth
 }: TreeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef(0)
@@ -278,6 +279,27 @@ export function TreeCanvas({
       c.fillStyle = mg; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill()
       c.strokeStyle = `hsla(${bh},${nh.s}%,60%,${(isH ? 0.55 : 0.2) * fade})`
       c.lineWidth = isH ? 2.5 : 1.2; c.stroke()
+
+      // Loading spinner on the clicked node
+      if (loadingNode === node) {
+        const spinAngle = t * 4
+        const arcLen = Math.PI * 0.8
+        c.globalAlpha = 0.9 * fade
+        c.strokeStyle = '#f0d888'
+        c.lineWidth = 2.5
+        c.lineCap = 'round'
+        c.beginPath()
+        c.arc(x, y, r + 6, spinAngle, spinAngle + arcLen)
+        c.stroke()
+        // Second thinner arc going opposite direction
+        c.globalAlpha = 0.4 * fade
+        c.lineWidth = 1.5
+        c.beginPath()
+        c.arc(x, y, r + 10, -spinAngle, -spinAngle + arcLen * 0.6)
+        c.stroke()
+        c.globalAlpha = 1
+        c.lineCap = 'butt'
+      }
 
       // Shine
       c.globalAlpha = 0.18 * fade

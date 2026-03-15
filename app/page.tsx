@@ -15,6 +15,7 @@ export default function Home() {
   const [wikiContent, setWikiContent] = useState<string | null>(null)
   const [wikiLoading, setWikiLoading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [loadingNode, setLoadingNode] = useState<KnowledgeNode | null>(null)
   const [totalNodes, setTotalNodes] = useState(0)
   const [mounted, setMounted] = useState(false)
   const generatingRef = useRef(false)
@@ -50,7 +51,7 @@ export default function Home() {
   const drillInto = useCallback(async (node: KnowledgeNode) => {
     if (!node.children || node.children.length === 0) {
       if (generatingRef.current) return
-      generatingRef.current = true; setIsGenerating(true)
+      generatingRef.current = true; setIsGenerating(true); setLoadingNode(node)
       try {
         const path = [...navStack.map(n => n.name), node.name]
         node.children = await generateSubtopics(node.name, node.desc || '', path)
@@ -58,7 +59,7 @@ export default function Home() {
         setTotalNodes(countAll(SEED_TREE))
       }
       catch { node.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: '⚠️' }] }
-      finally { setIsGenerating(false); generatingRef.current = false }
+      finally { setIsGenerating(false); generatingRef.current = false; setLoadingNode(null) }
     }
 
     const newStack = [...navStack, node]
@@ -104,7 +105,7 @@ export default function Home() {
       <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${hasWiki ? 'w-[calc(100%-380px)]' : 'w-full'}`}>
         <TreeCanvas branches={branches} roots={roots} isTreeView={isTreeView} currentNode={currentNode}
           navStack={navStack} onDrillInto={drillInto} onHoverNode={() => {}} isGenerating={isGenerating}
-          exploredNodes={new Set()} depth={depth} />
+          loadingNode={loadingNode} exploredNodes={new Set()} depth={depth} />
       </div>
 
       {/* UI Overlay */}
@@ -126,18 +127,7 @@ export default function Home() {
         </div>
 
         {/* Back button */}
-        {depth > 0 && <button onClick={() => navigateTo(depth - 1)} className="absolute bottom-4 right-[calc(380px+16px)] pointer-events-auto px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] transition-all" style={{ right: hasWiki ? 'calc(380px + 16px)' : '16px' }}>← Back</button>}
-
-        {/* Generating indicator */}
-        {isGenerating && (
-          <div className="absolute top-1/2 -translate-y-1/2" style={{ left: hasWiki ? 'calc((100% - 380px) / 2)' : '50%', transform: 'translate(-50%, -50%)' }}>
-            <div className="bg-black/60 backdrop-blur-xl rounded-2xl px-6 py-4 border border-white/5 text-center">
-              <div className="text-lg mb-2 animate-pulse">🌱</div>
-              <div className="text-[13px] text-[#f0ece4] font-semibold">Growing new branches...</div>
-              <div className="text-[10px] text-white/30 mt-1">AI is discovering deeper knowledge</div>
-            </div>
-          </div>
-        )}
+        {depth > 0 && <button onClick={() => navigateTo(depth - 1)} className="absolute bottom-4 pointer-events-auto px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] transition-all" style={{ right: hasWiki ? 'calc(380px + 16px)' : '16px' }}>← Back</button>}
       </div>
 
       {/* Persistent Wiki Panel — stays open once you drill into a node */}

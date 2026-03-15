@@ -37,7 +37,23 @@ function renderWikiContent(text: string, onLink: (term: string) => void) {
 export function WikiPanel({ node, content, loading, isBookmarked, onBookmark, onDrillInto, onWikiLink, onClose, depth, currentChildren }: WikiPanelProps) {
   return (
     <div className="fixed right-0 top-0 h-full w-full max-w-[380px] z-20 pointer-events-auto">
-      <div className="h-full bg-[#0c0c10]/90 backdrop-blur-2xl border-l border-white/5 flex flex-col">
+      <div className="h-full bg-[#0c0c10]/90 backdrop-blur-2xl border-l border-white/5 flex flex-col relative">
+        {/* Progress bar at very top of panel */}
+        {loading && (
+          <div className="absolute top-0 left-0 right-0 h-[3px] z-30 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-transparent via-[#d4a853] to-transparent animate-shimmer" 
+                 style={{ 
+                   width: '40%',
+                   animation: 'shimmer 1.2s ease-in-out infinite'
+                 }} />
+            <style>{`
+              @keyframes shimmer {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(350%); }
+              }
+            `}</style>
+          </div>
+        )}
         {/* Header */}
         <div className="p-4 border-b border-white/5">
           <div className="flex items-center justify-between mb-1">
