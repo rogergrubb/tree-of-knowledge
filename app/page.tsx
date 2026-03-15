@@ -170,35 +170,29 @@ export default function Home() {
 
       {/* UI Overlay */}
       <div className="fixed inset-0 pointer-events-none z-10">
-        {/* Top bar — title + search */}
+        {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={{ paddingRight: hasWiki ? '380px' : '0' }}>
-          <div className="flex items-center justify-between px-4 pt-3 pb-1">
-            {/* Back button */}
-            <div className="w-20">
-              {depth > 0 && (
-                <button onClick={goBack}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
-                  <span className="text-[13px]">‹</span> Back
-                </button>
-              )}
-            </div>
-
-            {/* Title center */}
-            <div className="text-center flex-1">
-              <h1 className="text-lg md:text-xl font-bold text-[#f0ece4] drop-shadow-lg" style={{ fontFamily: "'Lora', serif" }}>The Tree of Knowledge</h1>
-              <p className="text-[8px] text-[#6a7a8a] tracking-[3px] uppercase font-semibold">Infinite depth · AI-powered</p>
-            </div>
-
-            {/* Search button */}
-            <div className="w-20 flex justify-end">
-              <button onClick={() => { setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
-                <span className="text-[13px]">⌕</span> Search
-              </button>
-            </div>
+          {/* Title centered */}
+          <div className="text-center pt-3 pb-1">
+            <h1 className="text-lg md:text-xl font-bold text-[#f0ece4] drop-shadow-lg" style={{ fontFamily: "'Lora', serif" }}>The Tree of Knowledge</h1>
+            <p className="text-[8px] text-[#6a7a8a] tracking-[3px] uppercase font-semibold">Infinite depth · AI-powered</p>
           </div>
 
-          {/* Breadcrumb */}
+          {/* Search button — directly above the breadcrumb, left-aligned */}
+          <div className="px-4 pt-1 pb-0.5 flex items-center gap-2">
+            <button onClick={() => { setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
+              <span className="text-[12px]">⌕</span> Search
+            </button>
+            {depth > 0 && (
+              <button onClick={goBack}
+                className="flex items-center gap-1 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
+                <span className="text-[12px]">‹</span> Back
+              </button>
+            )}
+          </div>
+
+          {/* Breadcrumb — directly below search */}
           <div className="px-4 pb-2 flex items-center gap-1 flex-wrap">
             {navStack.map((node, i) => (
               <div key={i} className="flex items-center gap-1">
