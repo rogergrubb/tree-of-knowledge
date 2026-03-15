@@ -392,7 +392,7 @@ export default function Home() {
       {/* Wiki Panel */}
       {hasWiki && (
         <WikiPanel node={wikiNode!} content={wikiContent} loading={wikiLoading}
-          isBookmarked={false} onBookmark={() => {}} onDrillInto={drillInto} onWikiLink={handleWikiLink}
+          isBookmarked={false} isGenerating={isGenerating} onBookmark={() => {}} onDrillInto={drillInto} onWikiLink={handleWikiLink}
           onClose={() => { setWikiNode(null); setWikiContent(null) }}
           depth={depth} currentChildren={currentNode.children || []} />
       )}

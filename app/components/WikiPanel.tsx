@@ -6,6 +6,7 @@ interface WikiPanelProps {
   content: string | null
   loading: boolean
   isBookmarked: boolean
+  isGenerating: boolean
   onBookmark: () => void
   onDrillInto: (node: KnowledgeNode) => void
   onWikiLink: (term: string) => void
@@ -34,7 +35,7 @@ function renderWikiContent(text: string, onLink: (term: string) => void) {
   })
 }
 
-export function WikiPanel({ node, content, loading, isBookmarked, onBookmark, onDrillInto, onWikiLink, onClose, depth, currentChildren }: WikiPanelProps) {
+export function WikiPanel({ node, content, loading, isBookmarked, isGenerating, onBookmark, onDrillInto, onWikiLink, onClose, depth, currentChildren }: WikiPanelProps) {
   return (
     <div className="fixed right-0 top-0 h-full w-full max-w-[380px] z-20 pointer-events-auto">
       <div className="h-full bg-[#0c0c10]/90 backdrop-blur-2xl border-l border-white/5 flex flex-col relative">
@@ -153,19 +154,41 @@ export function WikiPanel({ node, content, loading, isBookmarked, onBookmark, on
             </div>
           )}
 
-          {/* No children = leaf node with infinite depth prompt */}
+          {/* No children = leaf node — grow prompt or generating spinner */}
           {(!node.children || node.children.length === 0) && !loading && (
             <div className="mt-5 pt-4 border-t border-white/5 text-center">
-              <div className="text-lg mb-2">🌱</div>
-              <div className="text-[11px] text-white/30 mb-3">
-                This branch hasn't grown yet. Click to let AI discover what lies deeper.
-              </div>
-              <button
-                onClick={() => onDrillInto(node)}
-                className="px-4 py-2 rounded-full bg-[#d4a853]/10 border border-[#d4a853]/20 text-[#d4a853] text-[11px] font-semibold hover:bg-[#d4a853]/20 transition-all"
-              >
-                🌱 Grow this branch
-              </button>
+              {isGenerating ? (
+                <>
+                  <div className="relative w-14 h-14 mx-auto mb-3">
+                    <svg className="w-14 h-14 animate-spin" style={{ animationDuration: '3s' }} viewBox="0 0 56 56">
+                      <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(212,168,83,0.12)" strokeWidth="2" />
+                      <path d="M28 4 a24 24 0 0 1 24 24" fill="none" stroke="#d4a853" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    <svg className="absolute inset-0 w-14 h-14 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} viewBox="0 0 56 56">
+                      <circle cx="28" cy="28" r="15" fill="none" stroke="rgba(212,168,83,0.08)" strokeWidth="1.5" />
+                      <path d="M28 13 a15 15 0 0 1 15 15" fill="none" stroke="rgba(240,216,136,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg">🌱</span>
+                    </div>
+                  </div>
+                  <div className="text-[12px] text-white/30 font-medium">Growing new branches...</div>
+                  <div className="text-[10px] text-white/15 mt-1">AI is discovering subtopics</div>
+                </>
+              ) : (
+                <>
+                  <div className="text-lg mb-2">🌱</div>
+                  <div className="text-[11px] text-white/30 mb-3">
+                    This branch hasn't grown yet. Click to let AI discover what lies deeper.
+                  </div>
+                  <button
+                    onClick={() => onDrillInto(node)}
+                    className="px-4 py-2 rounded-full bg-[#d4a853]/10 border border-[#d4a853]/20 text-[#d4a853] text-[11px] font-semibold hover:bg-[#d4a853]/20 transition-all"
+                  >
+                    🌱 Grow this branch
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
