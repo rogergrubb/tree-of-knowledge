@@ -10,10 +10,82 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { action, nodeName, nodeDesc, path } = await req.json()
+    const body = await req.json()
+    const { action, nodeName, nodeDesc, path, query } = body
 
-    if (!nodeName || !action) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!action) {
+      return NextResponse.json({ error: 'Missing action' }, { status: 400 })
+    }
+
+    // AI-powered search — resolve any query to a knowledge tree path
+    if (action === 'search') {
+      if (!query) return NextResponse.json({ error: 'Missing query' }, { status: 400 })
+
+      const searchSystem = `You are the search engine for "The Tree of Knowledge" — an encyclopedia that organizes ALL human knowledge into a navigable tree.
+
+Given a user's search query (which may be misspelled, vague, or use slang), you must:
+1. Figure out what they're actually looking for
+2. Determine where it belongs in the tree of human knowledge
+3. Return the full path from root to the topic
+
+The top-level branches of the tree are:
+- Natural Sciences (Physics, Chemistry, Biology, Earth Science, Astronomy)
+- Technology (Computer Science, Engineering, Energy, Space Tech)
+- Medicine (Human Body, Medical Practice, Mental Health, Public Health, Pharmacology)
+- Humanities (History, Literature, Religion, Languages)
+- Arts (Visual Arts, Music, Performing, Design)
+- Social Sciences (Psychology, Economics, Government, Sociology, Geography)
+- Foundations/Roots (Logic & Reasoning, Mathematics, Philosophy, Language)
+
+CRITICAL: Respond with ONLY a JSON object. No markdown, no backticks, no explanation. Just raw JSON.
+
+Return this exact format:
+{
+  "correctedTerm": "the actual correct name of what they searched for",
+  "path": ["Top Branch", "Sub-category", "Sub-sub-category", "The Topic"],
+  "desc": "one-sentence description of the topic",
+  "icon": "single relevant emoji"
+}
+
+The path should be 3-5 levels deep, going from a top-level branch down to the specific topic. Each level should be a real, recognized field or topic name (2-4 words max).`
+
+      const searchUser = `The user searched for: "${query}"
+
+What topic are they looking for, and where does it belong in the tree of human knowledge? Return the JSON path.`
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 500,
+          system: searchSystem,
+          messages: [{ role: 'user', content: searchUser }]
+        })
+      })
+
+      if (!response.ok) {
+        return NextResponse.json({ error: 'AI search failed' }, { status: 502 })
+      }
+
+      const data = await response.json()
+      const text = data.content?.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n') || ''
+
+      try {
+        const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+        const result = JSON.parse(cleaned)
+        return NextResponse.json({ result })
+      } catch {
+        return NextResponse.json({ result: null, error: 'Could not parse search result' })
+      }
+    }
+
+    if (!nodeName) {
+      return NextResponse.json({ error: 'Missing nodeName' }, { status: 400 })
     }
 
     const pathStr = (path || []).join(' > ')

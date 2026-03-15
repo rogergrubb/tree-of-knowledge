@@ -3,17 +3,54 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { TreeCanvas } from './components/TreeCanvas'
 import { WikiPanel } from './components/WikiPanel'
-import { KnowledgeNode, generateSubtopics, generateArticle } from './lib/ai'
+import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from './lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
 
 function countAll(n: KnowledgeNode): number { let c = 1; if (n.children) n.children.forEach(ch => c += countAll(ch)); return c }
 
-// Flatten the tree for local search
 function flattenTree(node: KnowledgeNode, path: KnowledgeNode[] = [], results: { node: KnowledgeNode, path: KnowledgeNode[] }[] = []) {
   const currentPath = [...path, node]
   results.push({ node, path: currentPath })
   if (node.children) node.children.forEach(ch => flattenTree(ch, currentPath, results))
   return results
+}
+
+// Find or create a node at a given path in the tree
+function findOrCreatePath(tree: KnowledgeNode, pathNames: string[], desc?: string, icon?: string): KnowledgeNode[] {
+  const result: KnowledgeNode[] = [tree]
+  let current = tree
+
+  for (let i = 0; i < pathNames.length; i++) {
+    const name = pathNames[i]
+    if (!current.children) current.children = []
+
+    // Try to find existing child (fuzzy match)
+    let child = current.children.find(c =>
+      c.name.toLowerCase() === name.toLowerCase() ||
+      c.name.toLowerCase().includes(name.toLowerCase()) ||
+      name.toLowerCase().includes(c.name.toLowerCase())
+    )
+
+    if (!child) {
+      // Create the node
+      const isLast = i === pathNames.length - 1
+      child = {
+        name,
+        desc: isLast ? desc : `A branch of ${current.name}`,
+        icon: isLast ? icon : undefined,
+        _aiGenerated: true
+      }
+      // Inherit hue from parent
+      if (current.hue !== undefined) child.hue = current.hue
+      if (current.sat !== undefined) child.sat = current.sat
+      current.children.push(child)
+    }
+
+    result.push(child)
+    current = child
+  }
+
+  return result
 }
 
 export default function Home() {
@@ -33,7 +70,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<{ node: KnowledgeNode, path: KnowledgeNode[] }[]>([])
   const [showSearch, setShowSearch] = useState(false)
-  const [searchGenerating, setSearchGenerating] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -79,7 +116,6 @@ export default function Home() {
     loadArticle(node, newStack.map(n => n.name))
   }, [navStack, loadArticle])
 
-  // Navigate to a specific index in the stack
   const navigateTo = useCallback((i: number) => {
     const s = navStack.slice(0, i + 1)
     setNavStack(s)
@@ -88,32 +124,45 @@ export default function Home() {
     else loadArticle(s[i], s.map(n => n.name))
   }, [navStack, loadArticle])
 
-  // Go back one level
-  const goBack = useCallback(() => {
-    if (depth > 0) navigateTo(depth - 1)
-  }, [depth, navigateTo])
+  const goBack = useCallback(() => { if (depth > 0) navigateTo(depth - 1) }, [depth, navigateTo])
 
-  // Navigate directly to a search result (rebuilds full nav stack)
+  // Jump to a local search result
   const jumpToNode = useCallback((result: { node: KnowledgeNode, path: KnowledgeNode[] }) => {
-    const newStack = result.path
-    setNavStack(newStack)
+    setNavStack(result.path)
     setCurrentNode(result.node)
-    setSearchQuery('')
-    setSearchResults([])
-    setShowSearch(false)
-    if (newStack.length > 1) {
-      loadArticle(result.node, newStack.map(n => n.name))
-    } else {
-      setWikiNode(null)
-      setWikiContent(null)
+    setSearchQuery(''); setSearchResults([]); setShowSearch(false)
+    if (result.path.length > 1) loadArticle(result.node, result.path.map(n => n.name))
+    else { setWikiNode(null); setWikiContent(null) }
+  }, [loadArticle])
+
+  // AI search — type anything, AI resolves it
+  const doAISearch = useCallback(async (query: string) => {
+    setSearchLoading(true)
+    try {
+      const result = await searchKnowledge(query)
+      if (result && result.path && result.path.length > 0) {
+        // Build/find the path in the actual tree
+        const nodePath = findOrCreatePath(SEED_TREE, result.path, result.desc, result.icon)
+        setTotalNodes(countAll(SEED_TREE))
+
+        // Navigate there
+        const targetNode = nodePath[nodePath.length - 1]
+        setNavStack(nodePath)
+        setCurrentNode(targetNode)
+        setSearchQuery(''); setSearchResults([]); setShowSearch(false)
+        loadArticle(targetNode, nodePath.map(n => n.name))
+      }
+    } catch (err) {
+      console.error('AI search failed:', err)
+    } finally {
+      setSearchLoading(false)
     }
   }, [loadArticle])
 
-  // Search — filters existing tree nodes
-  const handleSearch = useCallback((query: string) => {
+  // Local search with debounce
+  const handleSearchInput = useCallback((query: string) => {
     setSearchQuery(query)
     if (query.trim().length < 2) { setSearchResults([]); return }
-
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
     searchTimeoutRef.current = setTimeout(() => {
       const q = query.toLowerCase()
@@ -123,31 +172,27 @@ export default function Home() {
           item.node.name.toLowerCase().includes(q) ||
           (item.node.desc && item.node.desc.toLowerCase().includes(q))
         )
-      ).slice(0, 12)
+      ).slice(0, 8)
       setSearchResults(matches)
     }, 150)
   }, [])
 
-  // Wiki link handler
+  // Submit search — Enter key triggers AI search
+  const handleSearchSubmit = useCallback(() => {
+    if (searchQuery.trim().length >= 2) doAISearch(searchQuery.trim())
+  }, [searchQuery, doAISearch])
+
   const handleWikiLink = useCallback((term: string) => {
     const ch = currentNode.children || []
     const match = ch.find(c => c.name.toLowerCase().includes(term.toLowerCase()))
     if (match) drillInto(match)
   }, [currentNode, drillInto])
 
-  // Keyboard shortcut — Ctrl/Cmd+K to open search
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setShowSearch(true)
-        setTimeout(() => searchInputRef.current?.focus(), 50)
-      }
-      if (e.key === 'Escape') {
-        setShowSearch(false)
-        setSearchQuery('')
-        setSearchResults([])
-      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 50) }
+      if (e.key === 'Escape') { setShowSearch(false); setSearchQuery(''); setSearchResults([]) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -170,19 +215,18 @@ export default function Home() {
 
       {/* UI Overlay */}
       <div className="fixed inset-0 pointer-events-none z-10">
-        {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 pointer-events-auto" style={{ paddingRight: hasWiki ? '380px' : '0' }}>
-          {/* Title centered */}
+          {/* Title */}
           <div className="text-center pt-3 pb-1">
             <h1 className="text-lg md:text-xl font-bold text-[#f0ece4] drop-shadow-lg" style={{ fontFamily: "'Lora', serif" }}>The Tree of Knowledge</h1>
             <p className="text-[8px] text-[#6a7a8a] tracking-[3px] uppercase font-semibold">Infinite depth · AI-powered</p>
           </div>
 
-          {/* Search button — directly above the breadcrumb, left-aligned */}
+          {/* Search + Back buttons */}
           <div className="px-4 pt-1 pb-0.5 flex items-center gap-2">
             <button onClick={() => { setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
               className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
-              <span className="text-[12px]">⌕</span> Search
+              <span className="text-[12px]">⌕</span> Search anything
             </button>
             {depth > 0 && (
               <button onClick={goBack}
@@ -192,7 +236,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Breadcrumb — directly below search */}
+          {/* Breadcrumb */}
           <div className="px-4 pb-2 flex items-center gap-1 flex-wrap">
             {navStack.map((node, i) => (
               <div key={i} className="flex items-center gap-1">
@@ -207,15 +251,15 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Subtle stats bottom-left */}
+        {/* Stats */}
         <div className="absolute bottom-3 left-4">
           <div className="text-[10px] text-white/10 tracking-widest uppercase font-bold">{totalNodes} topics · <span className="text-[#f0d888]/20">∞ to discover</span></div>
         </div>
       </div>
 
-      {/* Search Overlay */}
+      {/* ════ SEARCH OVERLAY ════ */}
       {showSearch && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setShowSearch(false); setSearchQuery(''); setSearchResults([]) }} />
           <div className="relative w-full max-w-lg mx-4">
             {/* Search input */}
@@ -225,16 +269,23 @@ export default function Home() {
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search any topic — art, quantum physics, philosophy..."
-                className="w-full pl-12 pr-12 py-4 bg-[#12121a] border border-white/10 rounded-2xl text-[#f0ece4] text-[15px] font-medium outline-none focus:border-[#d4a853]/30 transition-all placeholder:text-white/20"
+                onChange={(e) => handleSearchInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}
+                placeholder="Search anything — plubicon tube, dark matter, baroque art..."
+                className="w-full pl-12 pr-24 py-4 bg-[#12121a] border border-white/10 rounded-2xl text-[#f0ece4] text-[15px] font-medium outline-none focus:border-[#d4a853]/30 transition-all placeholder:text-white/20"
                 style={{ fontFamily: "'Nunito', sans-serif" }}
                 autoFocus
               />
-              {searchQuery && (
-                <button onClick={() => { setSearchQuery(''); setSearchResults([]); searchInputRef.current?.focus() }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 text-sm transition-colors">
-                  ✕
+              {/* Go button for AI search */}
+              {searchQuery.trim().length >= 2 && (
+                <button onClick={handleSearchSubmit}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-[#d4a853]/15 border border-[#d4a853]/20 text-[#f0d888] text-[11px] font-bold hover:bg-[#d4a853]/25 transition-all">
+                  {searchLoading ? (
+                    <span className="flex items-center gap-1.5">
+                      <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.3"/><path d="M12 2 a10 10 0 0 1 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                      Finding...
+                    </span>
+                  ) : 'AI Search ↵'}
                 </button>
               )}
             </div>
@@ -242,27 +293,39 @@ export default function Home() {
             {/* Hint */}
             {!searchQuery && (
               <div className="text-center mt-3 text-[11px] text-white/15">
-                Type to search across all knowledge domains
+                Type anything and press Enter — AI will find it in the tree of knowledge
               </div>
             )}
 
-            {/* Results */}
-            {searchResults.length > 0 && (
-              <div className="mt-2 bg-[#12121a] border border-white/8 rounded-2xl overflow-hidden max-h-[50vh] overflow-y-auto">
+            {/* Loading state for AI search */}
+            {searchLoading && (
+              <div className="mt-3 bg-[#12121a] border border-white/8 rounded-2xl px-5 py-6 text-center">
+                <div className="relative w-10 h-10 mx-auto mb-3">
+                  <svg className="w-10 h-10 animate-spin" style={{ animationDuration: '2s' }} viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(212,168,83,0.12)" strokeWidth="2" />
+                    <path d="M20 4 a16 16 0 0 1 16 16" fill="none" stroke="#d4a853" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <div className="text-[13px] text-white/30 font-medium">AI is locating this in the tree of knowledge...</div>
+                <div className="text-[10px] text-white/15 mt-1">Figuring out where "{searchQuery}" belongs</div>
+              </div>
+            )}
+
+            {/* Local results */}
+            {!searchLoading && searchResults.length > 0 && (
+              <div className="mt-2 bg-[#12121a] border border-white/8 rounded-2xl overflow-hidden max-h-[45vh] overflow-y-auto">
                 {searchResults.map((result, i) => {
                   const pathNames = result.path.slice(1, -1).map(n => n.name)
                   return (
                     <button key={i} onClick={() => jumpToNode(result)}
-                      className="w-full text-left px-5 py-3.5 border-b border-white/[0.03] last:border-b-0 hover:bg-white/[0.03] transition-colors group">
+                      className="w-full text-left px-5 py-3 border-b border-white/[0.03] last:border-b-0 hover:bg-white/[0.03] transition-colors group">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-[14px] text-[#f0ece4] font-semibold group-hover:text-[#f0d888] transition-colors">
                             {result.node.icon && <span className="mr-1.5">{result.node.icon}</span>}
                             {result.node.name}
                           </div>
-                          {result.node.desc && (
-                            <div className="text-[11px] text-white/25 mt-0.5 line-clamp-1">{result.node.desc}</div>
-                          )}
+                          {result.node.desc && <div className="text-[11px] text-white/25 mt-0.5 line-clamp-1">{result.node.desc}</div>}
                           {pathNames.length > 0 && (
                             <div className="text-[10px] text-white/12 mt-1 flex items-center gap-1 flex-wrap">
                               {pathNames.map((name, j) => (
@@ -279,14 +342,25 @@ export default function Home() {
                     </button>
                   )
                 })}
+
+                {/* AI search prompt at bottom of local results */}
+                <button onClick={handleSearchSubmit}
+                  className="w-full text-left px-5 py-3 hover:bg-[#d4a853]/[0.04] transition-colors border-t border-white/[0.04] group">
+                  <div className="text-[12px] text-[#d4a853]/60 group-hover:text-[#d4a853] transition-colors font-medium">
+                    ⌕ Not what you are looking for? Press Enter for AI-powered search
+                  </div>
+                </button>
               </div>
             )}
 
-            {/* No results */}
-            {searchQuery.length >= 2 && searchResults.length === 0 && (
-              <div className="mt-2 bg-[#12121a] border border-white/8 rounded-2xl px-5 py-6 text-center">
-                <div className="text-[13px] text-white/25 mb-1">No matching topics found yet</div>
-                <div className="text-[11px] text-white/15">Try browsing the tree — AI generates new branches as you explore deeper</div>
+            {/* No local results — prompt AI search */}
+            {!searchLoading && searchQuery.length >= 2 && searchResults.length === 0 && (
+              <div className="mt-2 bg-[#12121a] border border-white/8 rounded-2xl px-5 py-5 text-center">
+                <div className="text-[13px] text-white/25 mb-2">No exact match in the current tree</div>
+                <button onClick={handleSearchSubmit}
+                  className="px-4 py-2 rounded-xl bg-[#d4a853]/10 border border-[#d4a853]/20 text-[#f0d888] text-[12px] font-semibold hover:bg-[#d4a853]/20 transition-all">
+                  ⌕ Let AI find "{searchQuery}" in all of human knowledge
+                </button>
               </div>
             )}
           </div>
@@ -295,18 +369,10 @@ export default function Home() {
 
       {/* Wiki Panel */}
       {hasWiki && (
-        <WikiPanel
-          node={wikiNode!}
-          content={wikiContent}
-          loading={wikiLoading}
-          isBookmarked={false}
-          onBookmark={() => {}}
-          onDrillInto={drillInto}
-          onWikiLink={handleWikiLink}
+        <WikiPanel node={wikiNode!} content={wikiContent} loading={wikiLoading}
+          isBookmarked={false} onBookmark={() => {}} onDrillInto={drillInto} onWikiLink={handleWikiLink}
           onClose={() => { setWikiNode(null); setWikiContent(null) }}
-          depth={depth}
-          currentChildren={currentNode.children || []}
-        />
+          depth={depth} currentChildren={currentNode.children || []} />
       )}
     </div>
   )

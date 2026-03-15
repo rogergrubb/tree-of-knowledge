@@ -65,3 +65,25 @@ export interface UserProgress {
   lastExplored: string
   sessions: number
 }
+
+export interface AISearchResult {
+  correctedTerm: string
+  path: string[]
+  desc: string
+  icon: string
+}
+
+export async function searchKnowledge(query: string): Promise<AISearchResult | null> {
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'search', query })
+    })
+    if (!res.ok) throw new Error(`API error: ${res.status}`)
+    const data = await res.json()
+    return data.result || null
+  } catch {
+    return null
+  }
+}
