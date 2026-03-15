@@ -116,12 +116,34 @@ export default function Home() {
     loadArticle(node, newStack.map(n => n.name))
   }, [navStack, loadArticle])
 
-  const navigateTo = useCallback((i: number) => {
+  const navigateTo = useCallback(async (i: number) => {
     const s = navStack.slice(0, i + 1)
+    const target = s[i]
     setNavStack(s)
-    setCurrentNode(s[i])
-    if (i === 0) { setWikiNode(null); setWikiContent(null) }
-    else loadArticle(s[i], s.map(n => n.name))
+    setCurrentNode(target)
+
+    if (i === 0) {
+      setWikiNode(null); setWikiContent(null)
+      return
+    }
+
+    loadArticle(target, s.map(n => n.name))
+
+    // If this node has no children (created as a pass-through by search), generate them
+    if (!target.children || target.children.length === 0) {
+      if (generatingRef.current) return
+      generatingRef.current = true; setIsGenerating(true); setLoadingNode(target)
+      try {
+        const path = s.map(n => n.name)
+        target.children = await generateSubtopics(target.name, target.desc || '', path)
+        target._aiGenerated = true
+        setTotalNodes(countAll(SEED_TREE))
+        // Force re-render by updating currentNode reference
+        setCurrentNode({ ...target })
+      }
+      catch { target.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: '⚠️' }] }
+      finally { setIsGenerating(false); generatingRef.current = false; setLoadingNode(null) }
+    }
   }, [navStack, loadArticle])
 
   const goBack = useCallback(() => { if (depth > 0) navigateTo(depth - 1) }, [depth, navigateTo])
