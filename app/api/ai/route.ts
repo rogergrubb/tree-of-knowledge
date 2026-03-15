@@ -21,37 +21,47 @@ export async function POST(req: NextRequest) {
     if (action === 'search') {
       if (!query) return NextResponse.json({ error: 'Missing query' }, { status: 400 })
 
-      const searchSystem = `You are the search engine for "The Tree of Knowledge" — an encyclopedia that organizes ALL human knowledge into a navigable tree.
+      const searchSystem = `You are the world's most intelligent search engine for "The Tree of Knowledge" — an encyclopedia organizing ALL human knowledge.
 
-Given a user's search query (which may be misspelled, vague, or use slang), you must:
-1. Figure out what they're actually looking for
-2. Determine where it belongs in the tree of human knowledge
-3. Return the full path from root to the topic
+Your job is to figure out what the user is ACTUALLY looking for, even when their query is:
+- Badly misspelled ("plubicon tube" → Jarvik-7 artificial heart, or Plumbicon camera tube)
+- A partial memory ("that tube thing for hearts" → artificial heart / ventricular assist device)
+- Slang or colloquial ("brain zaps" → SSRI discontinuation syndrome)
+- A phonetic approximation ("noo-mohnya" → pneumonia)
+- An obscure reference only an expert would know
+- A brand name, person's name, historical event, specific device, technique, or concept
+- Ambiguous — could belong to multiple fields
 
-The top-level branches of the tree are:
+REASONING PROCESS:
+1. Consider multiple interpretations of the query
+2. Think about what domain the user most likely means
+3. Consider phonetic similarity, common misspellings, and partial matches
+4. If it could be a specific invention, device, person, technique, chemical, species, theorem, artwork, or historical event — identify the SPECIFIC thing, not just the general category
+5. Place it precisely in the knowledge tree
+
+The top-level branches are:
 - Natural Sciences (Physics, Chemistry, Biology, Earth Science, Astronomy)
-- Technology (Computer Science, Engineering, Energy, Space Tech)
-- Medicine (Human Body, Medical Practice, Mental Health, Public Health, Pharmacology)
+- Technology (Computer Science, Engineering, Energy, Space Tech, Telecommunications)
+- Medicine (Human Body, Medical Practice, Mental Health, Public Health, Pharmacology, Biomedical Research, Medical Devices)
 - Humanities (History, Literature, Religion, Languages)
 - Arts (Visual Arts, Music, Performing, Design)
 - Social Sciences (Psychology, Economics, Government, Sociology, Geography)
-- Foundations/Roots (Logic & Reasoning, Mathematics, Philosophy, Language)
+- Foundations (Logic & Reasoning, Mathematics, Philosophy, Language)
 
-CRITICAL: Respond with ONLY a JSON object. No markdown, no backticks, no explanation. Just raw JSON.
+CRITICAL: Respond with ONLY a JSON object. No markdown, no backticks, no thinking, no explanation. Just raw JSON.
 
-Return this exact format:
 {
-  "correctedTerm": "the actual correct name of what they searched for",
-  "path": ["Top Branch", "Sub-category", "Sub-sub-category", "The Topic"],
-  "desc": "one-sentence description of the topic",
+  "correctedTerm": "the actual correct name (e.g. 'Jarvik-7 Artificial Heart')",
+  "path": ["Top Branch", "Sub-category", "Sub-sub-category", "Specific Topic"],
+  "desc": "one clear sentence describing what this is, written for a smart high school student",
   "icon": "single relevant emoji"
 }
 
-The path should be 3-5 levels deep, going from a top-level branch down to the specific topic. Each level should be a real, recognized field or topic name (2-4 words max).`
+Path must be 3-6 levels deep. Each level should be a real, recognized field or topic (2-5 words max). The final item in the path should be the SPECIFIC thing the user was looking for, not a general category.`
 
       const searchUser = `The user searched for: "${query}"
 
-What topic are they looking for, and where does it belong in the tree of human knowledge? Return the JSON path.`
+Identify the most likely thing they're looking for. Consider all possible interpretations — medical devices, scientific instruments, historical inventions, techniques, people, concepts. Return the JSON.`
 
       const response = await fetch(API_URL, {
         method: 'POST',
