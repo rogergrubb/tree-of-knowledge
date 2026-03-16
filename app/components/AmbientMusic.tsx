@@ -1,155 +1,155 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import * as Tone from 'tone'
+import { useEffect, useRef, useCallback } from 'react'
 
 interface AmbientMusicProps {
   enabled: boolean
 }
 
 export default function AmbientMusic({ enabled }: AmbientMusicProps) {
-  const initialized = useRef(false)
-  const synthPad = useRef<Tone.PolySynth | null>(null)
-  const synthArp = useRef<Tone.PolySynth | null>(null)
-  const synthBells = useRef<Tone.PolySynth | null>(null)
-  const padLoop = useRef<Tone.Loop | null>(null)
-  const arpLoop = useRef<Tone.Loop | null>(null)
-  const bellLoop = useRef<Tone.Loop | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const gainNodeRef = useRef<GainNode | null>(null)
+  const oscillatorsRef = useRef<OscillatorNode[]>([])
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Musical scales for ambient feel
-  const scales = {
-    peaceful: ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5'],
-    dreamy: ['D4', 'F4', 'A4', 'C5', 'E5', 'G5', 'A5', 'D6'],
-    wonder: ['E4', 'G4', 'B4', 'D5', 'F#5', 'A5', 'B5', 'E6'],
+  // Peaceful pentatonic scale frequencies
+  const notes = {
+    C4: 261.63, D4: 293.66, E4: 329.63, G4: 392.00, A4: 440.00,
+    C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880.00,
   }
+  const scale = Object.values(notes)
 
-  const initAudio = useCallback(async () => {
-    if (initialized.current) return
-    initialized.current = true
+  const startMusic = useCallback(async () => {
+    try {
+      // Create audio context on user gesture
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      if (!AudioContextClass) return
 
-    await Tone.start()
-    
-    // Soft pad synth for background harmony
-    synthPad.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'sine' },
-      envelope: {
-        attack: 2,
-        decay: 1,
-        sustain: 0.8,
-        release: 3,
-      },
-    }).toDestination()
-    synthPad.current.volume.value = -18
+      const ctx = new AudioContextClass()
+      audioContextRef.current = ctx
 
-    // Gentle arpeggio synth
-    synthArp.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'triangle' },
-      envelope: {
-        attack: 0.1,
-        decay: 0.3,
-        sustain: 0.2,
-        release: 1.5,
-      },
-    }).toDestination()
-    synthArp.current.volume.value = -22
-
-    // Bell/chime synth for sparkle
-    synthBells.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'sine' },
-      envelope: {
-        attack: 0.01,
-        decay: 0.5,
-        sustain: 0.1,
-        release: 2,
-      },
-    }).toDestination()
-    synthBells.current.volume.value = -25
-
-    // Add reverb for spaciousness
-    const reverb = new Tone.Reverb({ decay: 4, wet: 0.6 }).toDestination()
-    synthPad.current.connect(reverb)
-    synthArp.current.connect(reverb)
-    synthBells.current.connect(reverb)
-
-    let currentScale = scales.peaceful
-    let scaleIndex = 0
-
-    // Pad loop - slow chord changes
-    padLoop.current = new Tone.Loop((time) => {
-      if (!synthPad.current) return
-      const scaleKeys = Object.keys(scales) as (keyof typeof scales)[]
-      currentScale = scales[scaleKeys[scaleIndex % scaleKeys.length]]
-      
-      // Play a soft chord
-      const root = currentScale[0]
-      const third = currentScale[2]
-      const fifth = currentScale[4]
-      
-      synthPad.current.triggerAttackRelease([root, third, fifth], '4n', time)
-      scaleIndex++
-    }, '8m') // Every 8 measures
-
-    // Arpeggio loop - gentle melodic movement
-    let arpIndex = 0
-    arpLoop.current = new Tone.Loop((time) => {
-      if (!synthArp.current) return
-      
-      // Random chance to play a note
-      if (Math.random() > 0.3) {
-        const note = currentScale[arpIndex % currentScale.length]
-        synthArp.current.triggerAttackRelease(note, '8n', time)
+      // Resume if suspended
+      if (ctx.state === 'suspended') {
+        await ctx.resume()
       }
-      arpIndex++
-    }, '2n') // Every half note
 
-    // Bell loop - occasional sparkles
-    bellLoop.current = new Tone.Loop((time) => {
-      if (!synthBells.current) return
-      
-      // Random chance for bell chime
-      if (Math.random() > 0.7) {
-        const note = currentScale[Math.floor(Math.random() * currentScale.length)]
-        // Play an octave higher for bell-like quality
-        const highNote = note.replace(/\d/, (d) => String(parseInt(d) + 1))
-        synthBells.current.triggerAttackRelease(highNote, '16n', time)
+      // Master gain
+      const masterGain = ctx.createGain()
+      masterGain.gain.value = 0.15
+      masterGain.connect(ctx.destination)
+      gainNodeRef.current = masterGain
+
+      // Create reverb effect using convolver
+      const convolver = ctx.createConvolver()
+      const reverbTime = 3
+      const sampleRate = ctx.sampleRate
+      const length = sampleRate * reverbTime
+      const impulse = ctx.createBuffer(2, length, sampleRate)
+      for (let channel = 0; channel < 2; channel++) {
+        const channelData = impulse.getChannelData(channel)
+        for (let i = 0; i < length; i++) {
+          channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2)
+        }
       }
-    }, '1m') // Every measure
+      convolver.buffer = impulse
 
+      // Wet/dry mix
+      const dryGain = ctx.createGain()
+      dryGain.gain.value = 0.4
+      const wetGain = ctx.createGain()
+      wetGain.gain.value = 0.6
+      
+      dryGain.connect(masterGain)
+      convolver.connect(wetGain)
+      wetGain.connect(masterGain)
+
+      // Function to play a soft note
+      const playNote = (freq: number, duration: number, delay: number = 0) => {
+        const osc = ctx.createOscillator()
+        const noteGain = ctx.createGain()
+        
+        osc.type = 'sine'
+        osc.frequency.value = freq
+        
+        const now = ctx.currentTime + delay
+        noteGain.gain.setValueAtTime(0, now)
+        noteGain.gain.linearRampToValueAtTime(0.3, now + 0.5)
+        noteGain.gain.exponentialRampToValueAtTime(0.01, now + duration)
+        
+        osc.connect(noteGain)
+        noteGain.connect(dryGain)
+        noteGain.connect(convolver)
+        
+        osc.start(now)
+        osc.stop(now + duration + 0.1)
+        
+        oscillatorsRef.current.push(osc)
+      }
+
+      // Play a chord
+      const playChord = () => {
+        const baseIndex = Math.floor(Math.random() * 5)
+        const root = scale[baseIndex]
+        const third = scale[(baseIndex + 2) % scale.length]
+        const fifth = scale[(baseIndex + 4) % scale.length]
+        
+        playNote(root, 6, 0)
+        playNote(third, 5.5, 0.1)
+        playNote(fifth, 5, 0.2)
+      }
+
+      // Play an arpeggio note
+      const playArpeggio = () => {
+        if (Math.random() > 0.4) {
+          const note = scale[Math.floor(Math.random() * scale.length)]
+          playNote(note, 2, 0)
+        }
+      }
+
+      // Play initial chord
+      playChord()
+
+      // Schedule repeating patterns
+      intervalRef.current = setInterval(() => {
+        if (Math.random() > 0.7) {
+          playChord()
+        }
+        playArpeggio()
+      }, 2000)
+
+    } catch (e) {
+      console.error('Failed to start ambient music:', e)
+    }
+  }, [scale])
+
+  const stopMusic = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+
+    oscillatorsRef.current.forEach(osc => {
+      try { osc.stop() } catch {}
+    })
+    oscillatorsRef.current = []
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close()
+      audioContextRef.current = null
+    }
   }, [])
 
   useEffect(() => {
     if (enabled) {
-      initAudio().then(() => {
-        if (Tone.context.state === 'running' || Tone.context.state === 'suspended') {
-          Tone.Transport.bpm.value = 60
-          Tone.Transport.start()
-          padLoop.current?.start(0)
-          arpLoop.current?.start(0)
-          bellLoop.current?.start(0)
-        }
-      }).catch(() => {
-        // Silently fail if AudioContext not allowed
-      })
+      startMusic()
     } else {
-      // Only stop if we actually initialized
-      if (initialized.current) {
-        try {
-          padLoop.current?.stop()
-          arpLoop.current?.stop()
-          bellLoop.current?.stop()
-          Tone.Transport.stop()
-        } catch {
-          // Tone not ready yet, ignore
-        }
-      }
+      stopMusic()
     }
 
     return () => {
-      if (initialized.current) {
-        try { Tone.Transport.stop() } catch { /* ignore */ }
-      }
+      stopMusic()
     }
-  }, [enabled, initAudio])
+  }, [enabled, startMusic, stopMusic])
 
-  return null // This component only handles audio, no UI
+  return null
 }
