@@ -177,7 +177,7 @@ export function TreeCanvas({
     if (isTreeView) {
       c.globalAlpha = 0.12; c.font = '600 10px Nunito,sans-serif'; c.textAlign = 'center'
       c.fillStyle = '#a09070'
-      c.fillText('▼  F O U N D A T I O N S  ▼', centerX, gY + 14)
+      c.fillText('  F O U N D A T I O N S  ', centerX, gY + 14)
       c.globalAlpha = 1
     }
 
@@ -215,6 +215,38 @@ export function TreeCanvas({
     })
     c.globalAlpha = 1
 
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ROTATIONAL GLOW CALCULATION
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    const totalBranches = nodesRef.current.length
+    const totalRoots = rootNodesRef.current.length
+    const totalNodes = totalBranches + totalRoots
+    
+    // Slow rotation: completes one full cycle every ~8 seconds
+    const rotationSpeed = 0.125 // cycles per second
+    const rotationPhase = (t * rotationSpeed) % 1 // 0 to 1
+    
+    // Calculate which node index is currently "active" (brightest)
+    const activeNodeFloat = rotationPhase * totalNodes
+    
+    // Function to get glow intensity for a node based on its position in the rotation
+    const getGlowIntensity = (nodeIndex: number, isRoot: boolean): number => {
+      // Branches are indexed 0 to totalBranches-1
+      // Roots are indexed totalBranches to totalNodes-1
+      const globalIndex = isRoot ? totalBranches + nodeIndex : nodeIndex
+      
+      // Distance from the active node (wrapping around)
+      let dist = Math.abs(globalIndex - activeNodeFloat)
+      if (dist > totalNodes / 2) dist = totalNodes - dist
+      
+      // Glow falloff: smooth gaussian-like curve
+      // Nodes within ~2 positions of active get some glow
+      const glowWidth = 2.5
+      const intensity = Math.exp(-(dist * dist) / (2 * glowWidth * glowWidth))
+      
+      return intensity
+    }
+
     // Helper to draw a node
     const drawNode = (node: KnowledgeNode, i: number, fade: number, isRoot: boolean) => {
       const nh = getHue(node, navStack)
@@ -223,15 +255,56 @@ export function TreeCanvas({
       const r = (node._r || 20) * (isH ? 1.15 : 1) * Math.min(1, fade)
       const x = node._x || 0, y = node._y || 0
 
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ROTATIONAL GLOW EFFECT
+      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      const glowIntensity = getGlowIntensity(i, isRoot)
+      
+      if (glowIntensity > 0.05) {
+        // Outer glow ring
+        const glowRadius = r * (1.8 + glowIntensity * 1.2)
+        const glowAlpha = glowIntensity * 0.4 * fade
+        
+        const glowGrad = c.createRadialGradient(x, y, r * 0.8, x, y, glowRadius)
+        const glowHue = isRoot ? 45 : nh.h
+        glowGrad.addColorStop(0, `hsla(${glowHue},${nh.s + 20}%,60%,${glowAlpha})`)
+        glowGrad.addColorStop(0.5, `hsla(${glowHue},${nh.s + 10}%,50%,${glowAlpha * 0.5})`)
+        glowGrad.addColorStop(1, `hsla(${glowHue},${nh.s}%,40%,0)`)
+        
+        c.fillStyle = glowGrad
+        c.beginPath()
+        c.arc(x, y, glowRadius, 0, Math.PI * 2)
+        c.fill()
+        
+        // Subtle pulsing ring at peak intensity
+        if (glowIntensity > 0.7) {
+          const ringPulse = Math.sin(t * 3) * 0.5 + 0.5
+          c.globalAlpha = (glowIntensity - 0.7) * ringPulse * 0.6 * fade
+          c.strokeStyle = `hsl(${glowHue},${nh.s + 30}%,70%)`
+          c.lineWidth = 2
+          c.beginPath()
+          c.arc(x, y, r + 8 + ringPulse * 4, 0, Math.PI * 2)
+          c.stroke()
+          c.globalAlpha = 1
+        }
+      }
+
       // Branch line
       const bw = Math.max(2, Math.min(6, Math.sqrt(countN(node)) * 1))
-      c.globalAlpha = (isRoot ? 0.5 : 0.7) * fade
-      c.strokeStyle = isRoot ? '#5a4a30' : `hsl(${nh.h},${Math.max(20, nh.s - 15)}%,28%)`
-      c.lineWidth = bw; c.lineCap = 'round'; c.beginPath()
+      // Make branch line glow too
+      const lineGlow = glowIntensity * 0.3
+      c.globalAlpha = (isRoot ? 0.5 : 0.7 + lineGlow) * fade
+      c.strokeStyle = isRoot 
+        ? `hsl(40,${30 + lineGlow * 20}%,${30 + lineGlow * 15}%)` 
+        : `hsl(${nh.h},${Math.max(20, nh.s - 15 + lineGlow * 20)}%,${28 + lineGlow * 20}%)`
+      c.lineWidth = bw + lineGlow * 2
+      c.lineCap = 'round'
+      c.beginPath()
       c.moveTo(node._bx || 0, node._by || 0)
       const mx = ((node._bx || 0) + x) / 2 + (x - (node._bx || 0)) * 0.08
       const my = ((node._by || 0) + y) / 2
-      c.quadraticCurveTo(mx, my, x, y); c.stroke()
+      c.quadraticCurveTo(mx, my, x, y)
+      c.stroke()
       c.globalAlpha = 1
 
       // Explored indicator (subtle ring)
@@ -271,14 +344,19 @@ export function TreeCanvas({
         c.fillStyle = gr; c.beginPath(); c.arc(x, y, r * 2.5, 0, Math.PI * 2); c.fill()
       }
 
-      // Sphere
+      // Sphere - enhanced brightness during glow
+      const sphereBrightness = 40 + glowIntensity * 15
       const mg = c.createRadialGradient(x - r * 0.25, y - r * 0.3, 0, x, y, r)
       const bh = isRoot ? 35 : nh.h
-      mg.addColorStop(0, `hsla(${bh},${isRoot ? 35 : nh.s}%,${isH ? 52 : 40}%,${0.92 * fade})`)
-      mg.addColorStop(1, `hsla(${bh},${isRoot ? 30 : nh.s}%,${isH ? 30 : 20}%,${0.88 * fade})`)
+      mg.addColorStop(0, `hsla(${bh},${isRoot ? 35 : nh.s}%,${isH ? 52 : sphereBrightness}%,${0.92 * fade})`)
+      mg.addColorStop(1, `hsla(${bh},${isRoot ? 30 : nh.s}%,${isH ? 30 : 20 + glowIntensity * 10}%,${0.88 * fade})`)
       c.fillStyle = mg; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill()
-      c.strokeStyle = `hsla(${bh},${nh.s}%,60%,${(isH ? 0.55 : 0.2) * fade})`
-      c.lineWidth = isH ? 2.5 : 1.2; c.stroke()
+      
+      // Enhanced stroke during glow
+      const strokeAlpha = (isH ? 0.55 : 0.2 + glowIntensity * 0.4) * fade
+      c.strokeStyle = `hsla(${bh},${nh.s}%,${60 + glowIntensity * 20}%,${strokeAlpha})`
+      c.lineWidth = isH ? 2.5 : 1.2 + glowIntensity * 1.5
+      c.stroke()
 
       // Loading spinner on the clicked node
       if (loadingNode === node) {
@@ -302,7 +380,7 @@ export function TreeCanvas({
       }
 
       // Shine
-      c.globalAlpha = 0.18 * fade
+      c.globalAlpha = (0.18 + glowIntensity * 0.1) * fade
       const sh = c.createRadialGradient(x - r * 0.3, y - r * 0.32, 0, x, y, r * 0.8)
       sh.addColorStop(0, '#fff'); sh.addColorStop(1, 'transparent')
       c.fillStyle = sh; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill()
@@ -319,14 +397,14 @@ export function TreeCanvas({
       const fs = Math.max(10, Math.min(13, r * 0.36))
       c.font = `${isH ? 700 : 600} ${fs}px Nunito,sans-serif`
       const nameW = c.measureText(node.name).width
-      const subT = hasCh ? (node.children ? `${node.children.length} branches` : '∞ deeper') : ''
+      const subT = hasCh ? (node.children ? `${node.children.length} branches` : 'âˆž deeper') : ''
       c.font = `400 ${fs - 1}px Nunito,sans-serif`
       const subW = subT ? c.measureText(subT).width : 0
       const pw = Math.max(nameW, subW) + 20
       const ph = subT ? fs * 2 + 14 : fs + 12
       const px = x - pw / 2, py = y + r + 8
 
-      c.globalAlpha = 0.7 * fade
+      c.globalAlpha = (0.7 + glowIntensity * 0.2) * fade
       c.fillStyle = isRoot ? 'rgba(30,20,8,0.82)' : 'rgba(6,4,2,0.78)'
       c.beginPath()
       const rr = 7
@@ -335,16 +413,16 @@ export function TreeCanvas({
       c.quadraticCurveTo(px + pw, py + ph, px + pw - rr, py + ph); c.lineTo(px + rr, py + ph)
       c.quadraticCurveTo(px, py + ph, px, py + ph - rr); c.lineTo(px, py + rr)
       c.quadraticCurveTo(px, py, px + rr, py); c.closePath(); c.fill()
-      c.strokeStyle = 'rgba(255,255,255,0.04)'; c.lineWidth = 0.5; c.stroke()
+      c.strokeStyle = `rgba(255,255,255,${0.04 + glowIntensity * 0.1})`; c.lineWidth = 0.5; c.stroke()
       c.globalAlpha = 1
 
-      c.globalAlpha = (isH ? 1 : 0.9) * fade
+      c.globalAlpha = (isH ? 1 : 0.9 + glowIntensity * 0.1) * fade
       c.font = `${isH ? 700 : 600} ${fs}px Nunito,sans-serif`
       c.textAlign = 'center'; c.textBaseline = 'top'
       c.fillStyle = isRoot ? '#d4c8a0' : '#f0ece4'
       c.fillText(node.name, x, py + 5)
       if (subT) {
-        c.globalAlpha = 0.4 * fade
+        c.globalAlpha = (0.4 + glowIntensity * 0.2) * fade
         c.font = `400 ${fs - 1}px Nunito,sans-serif`
         c.fillStyle = isRoot ? '#a09070' : '#a0a098'
         c.fillText(subT, x, py + 5 + fs + 2)
