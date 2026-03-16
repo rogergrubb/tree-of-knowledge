@@ -107,7 +107,7 @@ export function TreeCanvas({
     }
     nodesRef.current = bNodes
     rootNodesRef.current = rNodes
-  }, [branches, roots, isTreeView])
+  }, [branches, roots, isTreeView, currentNode])
 
   useEffect(() => { layout() }, [layout])
   useEffect(() => { const onR = () => layout(); window.addEventListener('resize', onR); return () => window.removeEventListener('resize', onR) }, [layout])
