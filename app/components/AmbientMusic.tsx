@@ -120,21 +120,34 @@ export default function AmbientMusic({ enabled }: AmbientMusicProps) {
   useEffect(() => {
     if (enabled) {
       initAudio().then(() => {
-        Tone.Transport.bpm.value = 60
-        Tone.Transport.start()
-        padLoop.current?.start(0)
-        arpLoop.current?.start(0)
-        bellLoop.current?.start(0)
+        if (Tone.context.state === 'running' || Tone.context.state === 'suspended') {
+          Tone.Transport.bpm.value = 60
+          Tone.Transport.start()
+          padLoop.current?.start(0)
+          arpLoop.current?.start(0)
+          bellLoop.current?.start(0)
+        }
+      }).catch(() => {
+        // Silently fail if AudioContext not allowed
       })
     } else {
-      Tone.Transport.stop()
-      padLoop.current?.stop()
-      arpLoop.current?.stop()
-      bellLoop.current?.stop()
+      // Only stop if we actually initialized
+      if (initialized.current) {
+        try {
+          padLoop.current?.stop()
+          arpLoop.current?.stop()
+          bellLoop.current?.stop()
+          Tone.Transport.stop()
+        } catch {
+          // Tone not ready yet, ignore
+        }
+      }
     }
 
     return () => {
-      Tone.Transport.stop()
+      if (initialized.current) {
+        try { Tone.Transport.stop() } catch { /* ignore */ }
+      }
     }
   }, [enabled, initAudio])
 

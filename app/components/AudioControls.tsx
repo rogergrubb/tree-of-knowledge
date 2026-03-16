@@ -19,11 +19,7 @@ export default function AudioControls({ showTTS = false, ttsText = '' }: AudioCo
 
   useEffect(() => {
     setMounted(true)
-    // Load saved preference
-    const savedMusic = localStorage.getItem('ambientMusicEnabled')
-    if (savedMusic === 'true') {
-      setMusicEnabled(true)
-    }
+    // Don't auto-start music from localStorage — requires user click (browser policy)
   }, [])
 
   const toggleMusic = async () => {
