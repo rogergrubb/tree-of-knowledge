@@ -6,10 +6,10 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tree-of-knowledge-r
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'The Tree of Knowledge — Explore Every Branch of Human Understanding',
+    default: 'The Tree of Knowledge - Explore Every Branch of Human Understanding',
     template: '%s | Tree of Knowledge',
   },
-  description: 'Explore all human knowledge as an interactive, AI-powered tree. From quantum physics to ancient history — infinite depth on every topic. Free for everyone.',
+  description: 'Explore all human knowledge as an interactive, AI-powered tree. From quantum physics to ancient history - infinite depth on every topic. Free for everyone.',
   keywords: [
     'interactive encyclopedia', 'AI learning tool', 'knowledge map', 'visual learning',
     'study guide', 'free encyclopedia', 'AI tutor', 'explore topics', 'homework help',
@@ -24,13 +24,22 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: baseUrl,
     siteName: 'The Tree of Knowledge',
-    title: 'The Tree of Knowledge — Explore Every Branch of Human Understanding',
+    title: 'The Tree of Knowledge - Explore Every Branch of Human Understanding',
     description: 'Explore all human knowledge as an interactive, AI-powered tree. Infinite depth on every topic. Free for everyone.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'The Tree of Knowledge - Explore Every Branch of Human Understanding',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Tree of Knowledge — Explore Every Branch of Human Understanding',
+    title: 'The Tree of Knowledge - Explore Every Branch of Human Understanding',
     description: 'Explore all human knowledge as an interactive, AI-powered tree. Infinite depth on every topic.',
+    images: ['/og-image.png'],
   },
   robots: {
     index: true, follow: true,
