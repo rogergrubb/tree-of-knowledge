@@ -7,6 +7,8 @@ const visitors: Array<{
   city: string
   region: string
   country: string
+  lat: number
+  lng: number
   timestamp: string
   userAgent: string
 }> = []
@@ -30,15 +32,19 @@ export async function POST(request: NextRequest) {
     let city = 'Unknown'
     let region = 'Unknown'
     let country = 'Unknown'
+    let lat = 0
+    let lng = 0
     
     if (ip && ip !== 'unknown' && ip !== '::1' && ip !== '127.0.0.1') {
       try {
-        const geoResponse = await fetch(`http://ip-api.com/json/${ip}?fields=city,regionName,country`)
+        const geoResponse = await fetch(`http://ip-api.com/json/${ip}?fields=city,regionName,country,lat,lon`)
         if (geoResponse.ok) {
           const geoData = await geoResponse.json()
           city = geoData.city || 'Unknown'
           region = geoData.regionName || 'Unknown'
           country = geoData.country || 'Unknown'
+          lat = geoData.lat || 0
+          lng = geoData.lon || 0
         }
       } catch (geoError) {
         console.error('Geolocation error:', geoError)
@@ -50,6 +56,8 @@ export async function POST(request: NextRequest) {
       city,
       region,
       country,
+      lat,
+      lng,
       timestamp: new Date().toISOString(),
       userAgent: userAgent.substring(0, 100),
     }
