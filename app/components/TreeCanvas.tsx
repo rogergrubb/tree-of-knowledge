@@ -98,6 +98,19 @@ export function TreeCanvas({
 
   useEffect(() => { layout() }, [layout])
   useEffect(() => { const onR = () => layout(); window.addEventListener('resize', onR); return () => window.removeEventListener('resize', onR) }, [layout])
+  
+  // ResizeObserver to detect container size changes (e.g., when panels are resized)
+  useEffect(() => {
+    const container = canvasRef.current?.parentElement
+    if (!container) return
+    
+    const resizeObserver = new ResizeObserver(() => {
+      layout()
+    })
+    
+    resizeObserver.observe(container)
+    return () => resizeObserver.disconnect()
+  }, [layout])
 
   // Stars data
   const starsRef = useRef(Array.from({ length: 150 }, () => ({
@@ -215,9 +228,9 @@ export function TreeCanvas({
     })
     c.globalAlpha = 1
 
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ═══════════════════════════════════════════════════════════════
     // ROTATIONAL GLOW CALCULATION
-    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    // ═══════════════════════════════════════════════════════════════
     const totalBranches = nodesRef.current.length
     const totalRoots = rootNodesRef.current.length
     const totalNodes = totalBranches + totalRoots
@@ -255,9 +268,9 @@ export function TreeCanvas({
       const r = (node._r || 20) * (isH ? 1.15 : 1) * Math.min(1, fade)
       const x = node._x || 0, y = node._y || 0
 
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════════════════════════════════════
       // ROTATIONAL GLOW EFFECT
-      // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      // ═══════════════════════════════════════════════════════════════
       const glowIntensity = getGlowIntensity(i, isRoot)
       
       if (glowIntensity > 0.05) {
@@ -397,7 +410,7 @@ export function TreeCanvas({
       const fs = Math.max(10, Math.min(13, r * 0.36))
       c.font = `${isH ? 700 : 600} ${fs}px Nunito,sans-serif`
       const nameW = c.measureText(node.name).width
-      const subT = hasCh ? (node.children ? `${node.children.length} branches` : 'âˆž deeper') : ''
+      const subT = hasCh ? (node.children ? `${node.children.length} branches` : '∞ deeper') : ''
       c.font = `400 ${fs - 1}px Nunito,sans-serif`
       const subW = subT ? c.measureText(subT).width : 0
       const pw = Math.max(nameW, subW) + 20
