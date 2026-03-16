@@ -11,6 +11,7 @@ interface ResizeHandleProps {
 
 export function ResizeHandle({ side, width, minWidth, maxWidth, onResize }: ResizeHandleProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isHovering, setIsHovering] = useState(false)
   const startXRef = useRef(0)
   const startWidthRef = useRef(0)
 
@@ -50,33 +51,43 @@ export function ResizeHandle({ side, width, minWidth, maxWidth, onResize }: Resi
     }
   }, [isDragging, side, minWidth, maxWidth, onResize])
 
+  const showHandle = isDragging || isHovering
+
   return (
     <div
       onMouseDown={handleMouseDown}
-      className={`absolute top-0 bottom-0 w-1 cursor-col-resize z-20 group
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      className={`absolute top-0 bottom-0 z-30 cursor-col-resize
         ${side === 'left' ? 'right-0' : 'left-0'}`}
-      style={{ 
-        background: isDragging ? 'rgba(212, 168, 83, 0.4)' : 'transparent',
-      }}
+      style={{ width: 12 }}
     >
-      {/* Wider hit area */}
-      <div className={`absolute top-0 bottom-0 w-3 -translate-x-1/2
-        ${side === 'left' ? 'right-0 translate-x-1/2' : 'left-0 -translate-x-1/2'}`} />
-      
-      {/* Visual handle */}
-      <div className={`absolute top-1/2 -translate-y-1/2 w-1 h-12 rounded-full transition-all
-        ${isDragging 
-          ? 'bg-[#d4a853] opacity-100' 
-          : 'bg-white/10 opacity-0 group-hover:opacity-100 group-hover:bg-white/20'}`} 
+      {/* Visual indicator - only visible on hover/drag */}
+      <div 
+        className="absolute top-0 bottom-0 transition-opacity duration-150"
+        style={{
+          width: 3,
+          left: side === 'left' ? 'auto' : 0,
+          right: side === 'left' ? 0 : 'auto',
+          background: isDragging 
+            ? 'rgba(212, 168, 83, 0.6)' 
+            : 'rgba(255, 255, 255, 0.15)',
+          opacity: showHandle ? 1 : 0,
+        }}
       />
       
-      {/* Drag indicator dots */}
-      <div className={`absolute top-1/2 -translate-y-1/2 flex flex-col gap-1 transition-opacity
-        ${side === 'left' ? '-right-1' : '-left-1'}
-        ${isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`}>
-        <div className="w-1 h-1 rounded-full bg-white/40" />
-        <div className="w-1 h-1 rounded-full bg-white/40" />
-        <div className="w-1 h-1 rounded-full bg-white/40" />
+      {/* Center grip dots - only visible on hover/drag */}
+      <div 
+        className="absolute top-1/2 -translate-y-1/2 flex flex-col gap-1 transition-opacity duration-150"
+        style={{
+          left: side === 'left' ? 'auto' : 2,
+          right: side === 'left' ? 2 : 'auto',
+          opacity: showHandle ? 1 : 0,
+        }}
+      >
+        <div className="w-1 h-1 rounded-full" style={{ background: isDragging ? '#f0d888' : 'rgba(255,255,255,0.4)' }} />
+        <div className="w-1 h-1 rounded-full" style={{ background: isDragging ? '#f0d888' : 'rgba(255,255,255,0.4)' }} />
+        <div className="w-1 h-1 rounded-full" style={{ background: isDragging ? '#f0d888' : 'rgba(255,255,255,0.4)' }} />
       </div>
     </div>
   )
