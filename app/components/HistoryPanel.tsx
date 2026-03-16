@@ -137,7 +137,7 @@ export function HistoryPanel({ onNavigate, currentPath }: HistoryPanelProps) {
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-1.5 text-[10px] text-white/30 uppercase tracking-wider font-bold hover:text-white/50 transition-colors"
         >
-          <span className="text-[8px]">{isExpanded ? 'â–¼' : 'â–¶'}</span>
+          <span className="text-[8px]">{isExpanded ? '▼' : '▶'}</span>
           History ({history.length})
         </button>
         {isExpanded && (
@@ -201,7 +201,7 @@ export function HistoryPanel({ onNavigate, currentPath }: HistoryPanelProps) {
                           ? 'bg-[#d4a853]/30 border-[#d4a853]/50 text-[#f0d888]' 
                           : 'border-white/15 hover:border-white/30'}`}
                     >
-                      {selected.has(item.id) && <span className="text-[10px]">âœ“</span>}
+                      {selected.has(item.id) && <span className="text-[10px]">✓</span>}
                     </button>
                   )}
                   
@@ -228,7 +228,7 @@ export function HistoryPanel({ onNavigate, currentPath }: HistoryPanelProps) {
                       </div>
                       {item.path.length > 1 && (
                         <div className="text-[8px] text-white/20 truncate">
-                          {item.path.slice(0, -1).join(' â€º ')}
+                          {item.path.slice(0, -1).join(' › ')}
                         </div>
                       )}
                     </div>
