@@ -88,7 +88,7 @@ export function TreeCanvas({
         centerNode._r = 40
         centerNode._bx = cx
         centerNode._by = fanY + 80
-        centerNode._type = 'center'
+        centerNode._type = 'branch'  // Use 'branch' type for leaf nodes displayed in center
         bNodes.push(centerNode)
       } else {
         const angleSpan = Math.PI * 0.82
