@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { useState, useEffect, useCallback } from 'react'
 import { KnowledgeNode } from '../lib/ai'
 
@@ -14,6 +14,7 @@ interface WikiPanelProps {
   onClose: () => void
   depth: number
   currentChildren: KnowledgeNode[]
+  width?: number
 }
 
 function renderWikiContent(text: string, onLink: (term: string) => void) {
@@ -77,7 +78,7 @@ const ArrowIcon = () => (
   </svg>
 )
 
-export function WikiPanel({ node, content, loading, isBookmarked, isGenerating, onBookmark, onDrillInto, onWikiLink, onClose, depth, currentChildren }: WikiPanelProps) {
+export function WikiPanel({ node, content, loading, isBookmarked, isGenerating, onBookmark, onDrillInto, onWikiLink, onClose, depth, currentChildren, width = 380 }: WikiPanelProps) {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [ttsSupported, setTtsSupported] = useState(true)
 
@@ -131,7 +132,7 @@ export function WikiPanel({ node, content, loading, isBookmarked, isGenerating, 
   }, [content, node, isSpeaking])
 
   return (
-    <div className="fixed right-0 top-0 h-full w-full max-w-[380px] z-20 pointer-events-auto">
+    <div className="h-full w-full pointer-events-auto">
       <div className="h-full bg-[#0c0c10]/90 backdrop-blur-2xl border-l border-white/5 flex flex-col relative">
         {loading && (
           <div className="absolute top-0 left-0 right-0 h-[3px] z-30 overflow-hidden">
@@ -305,3 +306,4 @@ export function WikiPanel({ node, content, loading, isBookmarked, isGenerating, 
     </div>
   )
 }
+
