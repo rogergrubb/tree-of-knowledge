@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import AudioControls from "./components/AudioControls"
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tree-of-knowledge-roger-grubbs-projects-2e0adcba.vercel.app'
 
@@ -72,7 +71,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="antialiased bg-[#0a1424]">
         {children}
-        <AudioControls />
       </body>
     </html>
   )
