@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { TreeCanvas } from './components/TreeCanvas'
 import { WikiPanel } from './components/WikiPanel'
+import SupportButton from './components/SupportButton'
 import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from './lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
 
@@ -396,6 +397,9 @@ export default function Home() {
           onClose={() => { setWikiNode(null); setWikiContent(null) }}
           depth={depth} currentChildren={currentNode.children || []} />
       )}
+
+      {/* Support / Donate Button */}
+      <SupportButton />
     </div>
   )
 }
