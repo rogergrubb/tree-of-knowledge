@@ -112,7 +112,7 @@ export default function Home() {
         node._aiGenerated = true
         setTotalNodes(countAll(SEED_TREE))
       }
-      catch { node.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: 'âš ï¸' }] }
+      catch { node.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: '⚠️' }] }
       finally { setIsGenerating(false); generatingRef.current = false; setLoadingNode(null) }
     }
     const newStack = [...navStack, node]
@@ -152,7 +152,7 @@ export default function Home() {
         // Force re-render by updating currentNode reference
         setCurrentNode({ ...target })
       }
-      catch { target.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: 'âš ï¸' }] }
+      catch { target.children = [{ name: 'Try again', desc: 'AI temporarily unavailable', icon: '⚠️' }] }
       finally { setIsGenerating(false); generatingRef.current = false; setLoadingNode(null) }
     }
   }, [navStack, loadArticle, addToHistory])
@@ -190,7 +190,7 @@ export default function Home() {
     else { setWikiNode(null); setWikiContent(null) }
   }, [loadArticle, addToHistory])
 
-  // AI search â€” type anything, AI resolves it
+  // AI search — type anything, AI resolves it
   const doAISearch = useCallback(async (query: string) => {
     setSearchLoading(true)
     try {
@@ -235,7 +235,7 @@ export default function Home() {
     }, 150)
   }, [])
 
-  // Submit search â€” Enter key triggers AI search
+  // Submit search — Enter key triggers AI search
   const handleSearchSubmit = useCallback(() => {
     if (searchQuery.trim().length >= 2) doAISearch(searchQuery.trim())
   }, [searchQuery, doAISearch])
@@ -277,19 +277,19 @@ export default function Home() {
           {/* Title */}
           <div className="text-center pt-3 pb-1">
             <h1 className="text-lg md:text-xl font-bold text-[#f0ece4] drop-shadow-lg" style={{ fontFamily: "'Lora', serif" }}>The Tree of Knowledge</h1>
-            <p className="text-[8px] text-[#6a7a8a] tracking-[3px] uppercase font-semibold">Infinite depth Â· AI-powered</p>
+            <p className="text-[8px] text-[#6a7a8a] tracking-[3px] uppercase font-semibold">Infinite depth · AI-powered</p>
           </div>
 
           {/* Search + Back buttons */}
           <div className="px-4 pt-1 pb-0.5 flex items-center gap-2">
             <button onClick={() => { setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
               className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
-              <span className="text-[12px]">âŒ•</span> Search anything
+              <span className="text-[12px]">⌕</span> Search anything
             </button>
             {depth > 0 && (
               <button onClick={goBack}
                 className="flex items-center gap-1 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
-                <span className="text-[12px]">â€¹</span> Back
+                <span className="text-[12px]">‹</span> Back
               </button>
             )}
           </div>
@@ -298,11 +298,11 @@ export default function Home() {
           <div className="px-4 pb-2 flex items-center gap-1 flex-wrap">
             {navStack.map((node, i) => (
               <div key={i} className="flex items-center gap-1">
-                {i > 0 && <span className="text-[9px] text-white/15">â€º</span>}
+                {i > 0 && <span className="text-[9px] text-white/15">›</span>}
                 <button onClick={() => navigateTo(i)}
                   className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all backdrop-blur-sm
                     ${i === navStack.length - 1 ? 'text-[#f0d888] bg-[#f0d888]/10' : 'text-white/45 bg-black/25 hover:text-white hover:bg-white/8'}`}>
-                  {i === 0 ? 'ðŸŒ³ Tree' : node.name}
+                  {i === 0 ? '🌳 Tree' : node.name}
                 </button>
               </div>
             ))}
@@ -317,25 +317,25 @@ export default function Home() {
 
         {/* Stats */}
         <div className="absolute bottom-3 left-4 pointer-events-auto">
-          <div className="text-[10px] text-white/10 tracking-widest uppercase font-bold">{totalNodes} topics Â· <span className="text-[#f0d888]/20">âˆž to discover</span></div>
+          <div className="text-[10px] text-white/10 tracking-widest uppercase font-bold">{totalNodes} topics · <span className="text-[#f0d888]/20">∞ to discover</span></div>
         </div>
       </div>
 
-      {/* â•â•â•â• SEARCH OVERLAY â•â•â•â• */}
+      {/* ════ SEARCH OVERLAY ════ */}
       {showSearch && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setShowSearch(false); setSearchQuery(''); setSearchResults([]) }} />
           <div className="relative w-full max-w-lg mx-4">
             {/* Search input */}
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-lg">âŒ•</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-lg">⌕</span>
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearchInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}
-                placeholder="Search anything â€” plubicon tube, dark matter, baroque art..."
+                placeholder="Search anything — plubicon tube, dark matter, baroque art..."
                 className="w-full pl-12 pr-24 py-4 bg-[#12121a] border border-white/10 rounded-2xl text-[#f0ece4] text-[15px] font-medium outline-none focus:border-[#d4a853]/30 transition-all placeholder:text-white/20"
                 style={{ fontFamily: "'Nunito', sans-serif" }}
                 autoFocus
@@ -349,7 +349,7 @@ export default function Home() {
                       <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.3"/><path d="M12 2 a10 10 0 0 1 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                       Finding...
                     </span>
-                  ) : 'AI Search â†µ'}
+                  ) : 'AI Search ↵'}
                 </button>
               )}
             </div>
@@ -357,7 +357,7 @@ export default function Home() {
             {/* Hint */}
             {!searchQuery && (
               <div className="text-center mt-3 text-[11px] text-white/15">
-                Type anything and press Enter â€” AI will find it in the tree of knowledge
+                Type anything and press Enter — AI will find it in the tree of knowledge
               </div>
             )}
 
@@ -394,14 +394,14 @@ export default function Home() {
                             <div className="text-[10px] text-white/12 mt-1 flex items-center gap-1 flex-wrap">
                               {pathNames.map((name, j) => (
                                 <span key={j} className="flex items-center gap-1">
-                                  {j > 0 && <span className="text-white/8">â€º</span>}
+                                  {j > 0 && <span className="text-white/8">›</span>}
                                   <span>{name}</span>
                                 </span>
                               ))}
                             </div>
                           )}
                         </div>
-                        <span className="text-white/10 text-[11px] group-hover:text-white/25 transition-colors ml-3">â†’</span>
+                        <span className="text-white/10 text-[11px] group-hover:text-white/25 transition-colors ml-3">→</span>
                       </div>
                     </button>
                   )
@@ -411,19 +411,19 @@ export default function Home() {
                 <button onClick={handleSearchSubmit}
                   className="w-full text-left px-5 py-3 hover:bg-[#d4a853]/[0.04] transition-colors border-t border-white/[0.04] group">
                   <div className="text-[12px] text-[#d4a853]/60 group-hover:text-[#d4a853] transition-colors font-medium">
-                    âŒ• Not what you are looking for? Press Enter for AI-powered search
+                    ⌕ Not what you are looking for? Press Enter for AI-powered search
                   </div>
                 </button>
               </div>
             )}
 
-            {/* No local results â€” prompt AI search */}
+            {/* No local results — prompt AI search */}
             {!searchLoading && searchQuery.length >= 2 && searchResults.length === 0 && (
               <div className="mt-2 bg-[#12121a] border border-white/8 rounded-2xl px-5 py-5 text-center">
                 <div className="text-[13px] text-white/25 mb-2">No exact match in the current tree</div>
                 <button onClick={handleSearchSubmit}
                   className="px-4 py-2 rounded-xl bg-[#d4a853]/10 border border-[#d4a853]/20 text-[#f0d888] text-[12px] font-semibold hover:bg-[#d4a853]/20 transition-all">
-                  âŒ• Let AI find "{searchQuery}" in all of human knowledge
+                  ⌕ Let AI find "{searchQuery}" in all of human knowledge
                 </button>
               </div>
             )}
