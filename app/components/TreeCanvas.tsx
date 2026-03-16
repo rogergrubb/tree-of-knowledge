@@ -79,18 +79,31 @@ export function TreeCanvas({
     } else {
       const fanY = H * 0.45
       const n = branches.length
-      const angleSpan = Math.PI * 0.82
-      branches.forEach((child, i) => {
-        const w = Math.pow(countN(child), 0.38)
-        const startA = Math.PI / 2 + angleSpan / 2
-        const angle = n === 1 ? Math.PI / 2 : startA - (i / (n - 1)) * angleSpan
-        const len = Math.min(H * 0.3, W * 0.35, 200) + w * 14
-        child._x = cx + Math.cos(angle) * len
-        child._y = fanY - Math.sin(angle) * len
-        child._r = Math.max(16, Math.min(32, w * 5))
-        child._bx = cx; child._by = fanY; child._type = 'branch'
-        bNodes.push(child)
-      })
+      
+      if (n === 0) {
+        // No children - show current node in center as a "seed" that can grow
+        const centerNode = { ...currentNode }
+        centerNode._x = cx
+        centerNode._y = fanY
+        centerNode._r = 40
+        centerNode._bx = cx
+        centerNode._by = fanY + 80
+        centerNode._type = 'center'
+        bNodes.push(centerNode)
+      } else {
+        const angleSpan = Math.PI * 0.82
+        branches.forEach((child, i) => {
+          const w = Math.pow(countN(child), 0.38)
+          const startA = Math.PI / 2 + angleSpan / 2
+          const angle = n === 1 ? Math.PI / 2 : startA - (i / (n - 1)) * angleSpan
+          const len = Math.min(H * 0.3, W * 0.35, 200) + w * 14
+          child._x = cx + Math.cos(angle) * len
+          child._y = fanY - Math.sin(angle) * len
+          child._r = Math.max(16, Math.min(32, w * 5))
+          child._bx = cx; child._by = fanY; child._type = 'branch'
+          bNodes.push(child)
+        })
+      }
     }
     nodesRef.current = bNodes
     rootNodesRef.current = rNodes
@@ -99,13 +112,22 @@ export function TreeCanvas({
   useEffect(() => { layout() }, [layout])
   useEffect(() => { const onR = () => layout(); window.addEventListener('resize', onR); return () => window.removeEventListener('resize', onR) }, [layout])
   
-  // ResizeObserver to detect container size changes (e.g., when panels are resized)
+  // ResizeObserver to detect container size changes (when panels resize)
+  // Using a ref to track last known dimensions and only re-layout when they actually change
+  const lastDimsRef = useRef({ w: 0, h: 0 })
   useEffect(() => {
     const container = canvasRef.current?.parentElement
     if (!container) return
     
-    const resizeObserver = new ResizeObserver(() => {
-      layout()
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      const { width, height } = entry.contentRect
+      // Only relayout if dimensions actually changed
+      if (width !== lastDimsRef.current.w || height !== lastDimsRef.current.h) {
+        lastDimsRef.current = { w: width, h: height }
+        layout()
+      }
     })
     
     resizeObserver.observe(container)
