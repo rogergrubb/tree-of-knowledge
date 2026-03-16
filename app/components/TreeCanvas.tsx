@@ -112,26 +112,13 @@ export function TreeCanvas({
   useEffect(() => { layout() }, [layout])
   useEffect(() => { const onR = () => layout(); window.addEventListener('resize', onR); return () => window.removeEventListener('resize', onR) }, [layout])
   
-  // ResizeObserver to detect container size changes (when panels resize)
-  // Using a ref to track last known dimensions and only re-layout when they actually change
-  const lastDimsRef = useRef({ w: 0, h: 0 })
+  // ResizeObserver to handle panel resize
   useEffect(() => {
     const container = canvasRef.current?.parentElement
     if (!container) return
-    
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (!entry) return
-      const { width, height } = entry.contentRect
-      // Only relayout if dimensions actually changed
-      if (width !== lastDimsRef.current.w || height !== lastDimsRef.current.h) {
-        lastDimsRef.current = { w: width, h: height }
-        layout()
-      }
-    })
-    
-    resizeObserver.observe(container)
-    return () => resizeObserver.disconnect()
+    const observer = new ResizeObserver(() => layout())
+    observer.observe(container)
+    return () => observer.disconnect()
   }, [layout])
 
   // Stars data
