@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { TreeCanvas } from './components/TreeCanvas'
 import { WikiPanel } from './components/WikiPanel'
 import { HistoryPanel, useHistory, HistoryItem } from './components/HistoryPanel'
+import { ResizeHandle, usePanelWidth } from './components/ResizeHandle'
 import SupportButton from './components/SupportButton'
 import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from './lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
@@ -70,6 +71,10 @@ export default function Home() {
 
   // History hook
   const { history, addToHistory, deleteItems, clearHistory } = useHistory()
+
+  // Panel widths (resizable)
+  const { width: leftWidth, setWidth: setLeftWidth } = usePanelWidth('tok_left_width', 280, 200, 450)
+  const { width: rightWidth, setWidth: setRightWidth } = usePanelWidth('tok_right_width', 380, 300, 600)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -265,7 +270,13 @@ export default function Home() {
   return (
     <div className="w-screen h-screen overflow-hidden bg-[#0a1424] relative" style={{ fontFamily: "'Nunito', sans-serif" }}>
       {/* Tree canvas */}
-      <div className={`fixed top-0 left-0 h-full transition-all duration-300 ${hasWiki ? 'w-[calc(100%-380px)]' : 'w-full'}`}>
+      <div 
+        className="fixed top-0 h-full transition-all duration-150"
+        style={{ 
+          left: 0,
+          width: hasWiki ? `calc(100% - ${rightWidth}px)` : '100%'
+        }}
+      >
         <TreeCanvas branches={branches} roots={roots} isTreeView={isTreeView} currentNode={currentNode}
           navStack={navStack} onDrillInto={drillInto} onHoverNode={() => {}} isGenerating={isGenerating}
           loadingNode={loadingNode} exploredNodes={new Set()} depth={depth} />
@@ -273,7 +284,19 @@ export default function Home() {
 
       {/* UI Overlay */}
       <div className="fixed inset-0 pointer-events-none z-10">
-        <div className="absolute top-0 left-0 w-[280px] flex flex-col max-h-screen pointer-events-auto" style={{ paddingRight: hasWiki ? '0' : '0' }}>
+        {/* Left Sidebar */}
+        <div 
+          className="absolute top-0 left-0 flex flex-col max-h-screen pointer-events-auto bg-gradient-to-r from-black/30 to-transparent"
+          style={{ width: leftWidth }}
+        >
+          {/* Resize Handle */}
+          <ResizeHandle 
+            side="left" 
+            width={leftWidth} 
+            minWidth={200} 
+            maxWidth={450} 
+            onResize={setLeftWidth} 
+          />
           {/* Title */}
           <div className="text-center pt-3 pb-1">
             <h1 className="text-lg md:text-xl font-bold text-[#f0ece4] drop-shadow-lg" style={{ fontFamily: "'Lora', serif" }}>The Tree of Knowledge</h1>
@@ -434,12 +457,27 @@ export default function Home() {
         </div>
       )}
 
-      {/* Wiki Panel */}
+      {/* Wiki Panel (Resizable) */}
       {hasWiki && (
-        <WikiPanel node={wikiNode!} content={wikiContent} loading={wikiLoading}
-          isBookmarked={false} isGenerating={isGenerating} onBookmark={() => {}} onDrillInto={drillInto} onWikiLink={handleWikiLink}
-          onClose={() => { setWikiNode(null); setWikiContent(null) }}
-          depth={depth} currentChildren={currentNode.children || []} />
+        <div 
+          className="fixed top-0 right-0 h-full z-20"
+          style={{ width: rightWidth }}
+        >
+          {/* Resize Handle */}
+          <ResizeHandle 
+            side="right" 
+            width={rightWidth} 
+            minWidth={300} 
+            maxWidth={600} 
+            onResize={setRightWidth} 
+          />
+          <WikiPanel node={wikiNode!} content={wikiContent} loading={wikiLoading}
+            isBookmarked={false} isGenerating={isGenerating} onBookmark={() => {}} onDrillInto={drillInto} onWikiLink={handleWikiLink}
+            onClose={() => { setWikiNode(null); setWikiContent(null) }}
+            depth={depth} currentChildren={currentNode.children || []} 
+            width={rightWidth}
+          />
+        </div>
       )}
 
       {/* Support / Donate Button */}
