@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { TreeCanvas } from './components/TreeCanvas'
 import { WikiPanel } from './components/WikiPanel'
-import { HistoryPanel, useHistory } from './components/HistoryPanel'
+import { HistoryPanel, useHistory, HistoryItem } from './components/HistoryPanel'
 import SupportButton from './components/SupportButton'
 import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from './lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
@@ -69,7 +69,7 @@ export default function Home() {
   const wikiAbortRef = useRef<AbortController | null>(null)
 
   // History hook
-  const { addToHistory } = useHistory()
+  const { history, addToHistory, deleteItems, clearHistory } = useHistory()
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -310,7 +310,10 @@ export default function Home() {
 
           {/* History Panel */}
           <HistoryPanel 
+            history={history}
             onNavigate={navigateFromHistory} 
+            onDelete={deleteItems}
+            onClear={clearHistory}
             currentPath={navStack.map(n => n.name)} 
           />
         </div>
