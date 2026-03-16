@@ -1,11 +1,11 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { TreeCanvas } from './components/TreeCanvas'
 import { WikiPanel } from './components/WikiPanel'
 import { HistoryPanel, useHistory, HistoryItem } from './components/HistoryPanel'
 import { ResizeHandle, usePanelWidth } from './components/ResizeHandle'
-import SupportButton from './components/SupportButton'
+import SidebarButtons from './components/SidebarButtons'
 import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from './lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
 
@@ -282,56 +282,59 @@ export default function Home() {
           loadingNode={loadingNode} exploredNodes={new Set()} depth={depth} />
       </div>
 
-      {/* UI Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-10">
-        {/* Left Sidebar */}
-        <div 
-          className="absolute top-0 left-0 flex flex-col max-h-screen pointer-events-auto bg-gradient-to-r from-black/30 to-transparent"
-          style={{ width: leftWidth }}
-        >
-          {/* Resize Handle */}
-          <ResizeHandle 
-            side="left" 
-            width={leftWidth} 
-            minWidth={200} 
-            maxWidth={450} 
-            onResize={setLeftWidth} 
-          />
+      {/* Left Sidebar - Full Height */}
+      <div 
+        className="fixed top-0 left-0 h-screen flex flex-col z-10 bg-[#0a0e18]/95 border-r border-white/[0.06]"
+        style={{ width: leftWidth }}
+      >
+        {/* Resize Handle */}
+        <ResizeHandle 
+          side="left" 
+          width={leftWidth} 
+          minWidth={200} 
+          maxWidth={450} 
+          onResize={setLeftWidth} 
+        />
+        
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0">
           {/* Title */}
-          <div className="text-center pt-3 pb-1">
+          <div className="text-center pt-4 pb-2">
             <h1 className="text-lg md:text-xl font-bold text-[#f0ece4] drop-shadow-lg" style={{ fontFamily: "'Lora', serif" }}>The Tree of Knowledge</h1>
             <p className="text-[8px] text-[#6a7a8a] tracking-[3px] uppercase font-semibold">Infinite depth · AI-powered</p>
           </div>
 
           {/* Search + Back buttons */}
-          <div className="px-4 pt-1 pb-0.5 flex items-center gap-2">
+          <div className="px-4 pt-1 pb-1 flex items-center gap-2">
             <button onClick={() => { setShowSearch(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-white/[0.08] transition-all">
               <span className="text-[12px]">⌕</span> Search anything
             </button>
             {depth > 0 && (
               <button onClick={goBack}
-                className="flex items-center gap-1 px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/5 text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-black/40 transition-all">
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-[#8a9aaa] text-[11px] font-semibold hover:text-[#f0d888] hover:bg-white/[0.08] transition-all">
                 <span className="text-[12px]">‹</span> Back
               </button>
             )}
           </div>
 
           {/* Breadcrumb */}
-          <div className="px-4 pb-2 flex items-center gap-1 flex-wrap">
+          <div className="px-4 py-2 flex items-center gap-1 flex-wrap border-b border-white/[0.04]">
             {navStack.map((node, i) => (
               <div key={i} className="flex items-center gap-1">
                 {i > 0 && <span className="text-[9px] text-white/15">›</span>}
                 <button onClick={() => navigateTo(i)}
-                  className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all backdrop-blur-sm
-                    ${i === navStack.length - 1 ? 'text-[#f0d888] bg-[#f0d888]/10' : 'text-white/45 bg-black/25 hover:text-white hover:bg-white/8'}`}>
+                  className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all
+                    ${i === navStack.length - 1 ? 'text-[#f0d888] bg-[#f0d888]/10' : 'text-white/45 bg-white/[0.04] hover:text-white hover:bg-white/[0.08]'}`}>
                   {i === 0 ? '🌳 Tree' : node.name}
                 </button>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* History Panel */}
+        {/* Scrollable Content - History */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <HistoryPanel 
             history={history}
             onNavigate={navigateFromHistory} 
@@ -341,9 +344,15 @@ export default function Home() {
           />
         </div>
 
-        {/* Stats */}
-        <div className="absolute bottom-3 left-4 pointer-events-auto">
-          <div className="text-[10px] text-white/10 tracking-widest uppercase font-bold">{totalNodes} topics · <span className="text-[#f0d888]/20">∞ to discover</span></div>
+        {/* Footer - Fixed at Bottom */}
+        <div className="flex-shrink-0 border-t border-white/[0.06] p-3">
+          {/* Stats */}
+          <div className="text-[10px] text-white/20 tracking-wider uppercase font-semibold mb-3 text-center">
+            {totalNodes} topics · <span className="text-[#f0d888]/30">∞ to discover</span>
+          </div>
+          
+          {/* Support & Music Buttons */}
+          <SidebarButtons />
         </div>
       </div>
 
@@ -480,8 +489,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Support / Donate Button */}
-      <SupportButton />
+
     </div>
   )
 }
+
