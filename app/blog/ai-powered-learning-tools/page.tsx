@@ -11,11 +11,40 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-12',
   },
+
+
+const blogPostingSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI-Powered Learning Tools: How Artificial Intelligence is Revolutionizing Education",
+  "description": "Explore how AI tutors, adaptive learning systems, and intelligent knowledge tools are transforming how we learn. The future of education is here.",
+  "datePublished": "2026-03-12",
+  "dateModified": "2026-03-12",
+  "author": {
+    "@type": "Organization",
+    "name": "NumberOneSon Software"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NumberOneSon Software",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://treeofknowledge.dev/og-image.png"
+    }
+  },
+  "url": "https://treeofknowledge.dev/blog/ai-powered-learning-tools",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://treeofknowledge.dev/blog/ai-powered-learning-tools"
+  }
+};
 }
 
 export default function AIPoweredLearningTools() {
   return (
-    <main className="min-h-screen bg-[#0a1424] text-white">
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }} />
+      <main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
           <Link href="/blog" className="text-green-400 hover:text-green-300 mb-4 inline-block">
@@ -170,17 +199,7 @@ export default function AIPoweredLearningTools() {
             AI can occasionally be wrong or outdated. For important facts, especially in fast-moving fields, verify with authoritative sources.
           </p>
 
-const blogPostingSchema = {
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "AI-Powered Learning Tools: How Artificial Intelligence is Revolutionizing Education",
-  "description": "Explore how AI tutors, adaptive learning systems, and intelligent knowledge tools are transforming how we learn. The future of education is here.",
-  "datePublished": "2026-03-12",
-  "dateModified": "2026-03-12",
-  "author": {
-    "@type": "Organization",
-    "name": "NumberOneSon Software"
-  },
+,
   "publisher": {
     "@type": "Organization",
     "name": "NumberOneSon Software",
@@ -195,12 +214,7 @@ const blogPostingSchema = {
     "@id": "https://treeofknowledge.dev/blog/ai-powered-learning-tools"
   }
 };
-<>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
-      />
-      <main className="min-h-screen bg-[#0a1424] text-white">
+<main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
           <Link href="/blog" className="text-green-400 hover:text-green-300 mb-4 inline-block">
@@ -411,5 +425,5 @@ const blogPostingSchema = {
       </article>
     </main>
     </>
-  )
+)
 }
