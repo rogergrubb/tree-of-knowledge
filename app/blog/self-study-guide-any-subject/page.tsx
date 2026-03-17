@@ -2,6 +2,33 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 
+,
+  "publisher": {
+    "@type": "Organization",
+    "name": "NumberOneSon Software",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://treeofknowledge.dev/og-image.png"
+    }
+  },
+  "url": "https://treeofknowledge.dev/blog/self-study-guide-any-subject",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://treeofknowledge.dev/blog/self-study-guide-any-subject"
+  }
+};
+export const metadata: Metadata = {
+  title: 'The Ultimate Self-Study Guide: How to Teach Yourself Any Subject',
+  description: 'A complete framework for self-directed learning. From choosing what to study to measuring your progress. Master any subject without a classroom.',
+  keywords: ['self study guide', 'teach yourself', 'autodidact', 'self directed learning', 'how to study alone', 'learn without school', 'independent learning'],
+  openGraph: {
+    title: 'The Ultimate Self-Study Guide: How to Teach Yourself Any Subject',
+    description: 'A complete framework for self-directed learning. Master any subject without a classroom.',
+    type: 'article',
+    publishedTime: '2026-03-11',
+  },
+
+
 const blogPostingSchema = {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
@@ -27,25 +54,12 @@ const blogPostingSchema = {
     "@id": "https://treeofknowledge.dev/blog/self-study-guide-any-subject"
   }
 };
-export const metadata: Metadata = {
-  title: 'The Ultimate Self-Study Guide: How to Teach Yourself Any Subject',
-  description: 'A complete framework for self-directed learning. From choosing what to study to measuring your progress. Master any subject without a classroom.',
-  keywords: ['self study guide', 'teach yourself', 'autodidact', 'self directed learning', 'how to study alone', 'learn without school', 'independent learning'],
-  openGraph: {
-    title: 'The Ultimate Self-Study Guide: How to Teach Yourself Any Subject',
-    description: 'A complete framework for self-directed learning. Master any subject without a classroom.',
-    type: 'article',
-    publishedTime: '2026-03-11',
-  },
 }
 
 export default function SelfStudyGuide() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }} />
       <main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
@@ -308,5 +322,5 @@ export default function SelfStudyGuide() {
       </article>
     </main>
     </>
-  )
+)
 }
