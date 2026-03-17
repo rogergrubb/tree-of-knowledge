@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     description: 'Discover the proven techniques used by top learners to master any subject in record time.',
     type: 'article',
     publishedTime: '2026-03-15',
-  },
+  },}
 
 
 const blogPostingSchema = {
@@ -54,7 +54,6 @@ const blogPostingSchema = {
     "@id": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast"
   }
 };
-}
 
 export default function HowToLearnAnythingFast() {
   return (
