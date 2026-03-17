@@ -21,9 +21,9 @@ export default function HomePage() {
         <header>
           <h1>The Tree of Knowledge</h1>
           <p>
-            An interactive, AI-powered encyclopedia that lets you explore every branch of human knowledge. 
+            Welcome to the Tree of Knowledge, an interactive, AI-powered encyclopedia that lets you explore every branch of human understanding. 
             Navigate topics from quantum physics to ancient history through a visual tree interface. 
-            Free for everyone, no account required.
+            The Tree of Knowledge is free for everyone, no account required.
           </p>
         </header>
         
@@ -54,7 +54,7 @@ export default function HomePage() {
               <li>Read AI-generated articles on any topic</li>
               <li>Listen with text-to-speech</li>
               <li>Search across all human knowledge</li>
-              <li>No sign-up required — completely free</li>
+              <li>No sign-up required - completely free</li>
             </ul>
           </section>
 
@@ -88,9 +88,9 @@ export default function HomePage() {
         <div className="min-h-screen bg-[#0a1424] text-white p-8" style={{ fontFamily: 'system-ui, sans-serif' }}>
           <h1 className="text-3xl font-bold mb-4">The Tree of Knowledge</h1>
           <p className="mb-6 text-lg text-gray-300">
-            An interactive, AI-powered encyclopedia that lets you explore every branch of human knowledge.
+            Welcome to the Tree of Knowledge, an interactive, AI-powered encyclopedia that lets you explore every branch of human understanding.
             Navigate topics from quantum physics to ancient history through a visual tree interface.
-            Free for everyone, no account required.
+            The Tree of Knowledge is free for everyone, no account required.
           </p>
           <h2 className="text-2xl font-semibold mb-4">Explore Topics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
