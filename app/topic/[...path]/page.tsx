@@ -11,19 +11,40 @@ export async function generateStaticParams() {
   return flattenAllPaths().map(p => ({ path: p.split('/') }))
 }
 
+function generateSeoDescription(label: string, shortDesc: string | undefined, breadcrumbText: string): string {
+  // Generate 120-160 character SEO descriptions with brand name
+  const topic = label.toLowerCase()
+  
+  if (shortDesc) {
+    // Expand the short description into a full SEO description
+    return `Explore ${topic}: ${shortDesc.toLowerCase()}. Dive deep with interactive, AI-powered articles and visual knowledge maps. Free on Tree of Knowledge.`
+  }
+  
+  // Generate based on breadcrumb context
+  if (breadcrumbText.includes('>')) {
+    const parent = breadcrumbText.split('>')[0].trim().toLowerCase()
+    return `Learn about ${topic} within ${parent}. Explore interactive, AI-powered articles with infinite depth on every subtopic. Free on Tree of Knowledge.`
+  }
+  
+  // Top-level topic
+  return `Explore ${topic} from fundamentals to advanced concepts. Interactive AI-powered encyclopedia with visual knowledge trees. Free on Tree of Knowledge.`
+}
+
 export async function generateMetadata(props: TopicPageProps): Promise<Metadata> {
   const { path } = await props.params
   const node = findNode(KNOWLEDGE_TREE, path)
   if (!node) return {}
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tree-of-knowledge-roger-grubbs-projects-2e0adcba.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://treeofknowledge.dev'
   const fullPath = path.join('/')
   const breadcrumbText = path.map(s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')).join(' > ')
+  const seoDescription = generateSeoDescription(node.label, node.description, breadcrumbText)
+  
   return {
-    title: `${node.label} — Learn, Explore, Go Deeper`,
-    description: node.description || `Explore ${node.label} in depth. Interactive AI-powered articles and visual knowledge tree. Part of ${breadcrumbText}. Free for everyone.`,
+    title: `${node.label} - Learn, Explore, Go Deeper`,
+    description: seoDescription,
     openGraph: {
-      title: `${node.label} — Tree of Knowledge`,
-      description: node.description || `Explore ${node.label} through an interactive, AI-powered knowledge tree.`,
+      title: `${node.label} - Tree of Knowledge`,
+      description: seoDescription,
       url: `${baseUrl}/topic/${fullPath}`,
       type: 'article',
     },
@@ -54,7 +75,7 @@ export default async function TopicPage(props: TopicPageProps) {
   if (!node) notFound()
 
   const content = await getTopicContent(path, node.label)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tree-of-knowledge-roger-grubbs-projects-2e0adcba.vercel.app'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://treeofknowledge.dev'
 
   const breadcrumbs = path.map((seg, i) => ({
     label: seg.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
