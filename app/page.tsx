@@ -5,6 +5,7 @@ import { TreeCanvas } from './components/TreeCanvas'
 import { WikiPanel } from './components/WikiPanel'
 import { HistoryPanel, useHistory, HistoryItem } from './components/HistoryPanel'
 import { ResizeHandle, usePanelWidth } from './components/ResizeHandle'
+import { VerticalResizeHandle, usePanelHeight } from './components/VerticalResizeHandle'
 import SidebarButtons from './components/SidebarButtons'
 import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from './lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from './data/seedTree'
@@ -75,6 +76,9 @@ export default function Home() {
   // Panel widths (resizable)
   const { width: leftWidth, setWidth: setLeftWidth } = usePanelWidth('tok_left_width', 280, 200, 450)
   const { width: rightWidth, setWidth: setRightWidth } = usePanelWidth('tok_right_width', 380, 300, 600)
+  
+  // History panel height (resizable)
+  const { height: historyHeight, setHeight: setHistoryHeight } = usePanelHeight('tok_history_height', 300, 100, 600)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -333,8 +337,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scrollable Content - History */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        {/* History Panel - Resizable Height */}
+        <div 
+          className="flex-shrink-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+          style={{ height: historyHeight }}
+        >
           <HistoryPanel 
             history={history}
             onNavigate={navigateFromHistory} 
@@ -343,6 +350,17 @@ export default function Home() {
             currentPath={navStack.map(n => n.name)} 
           />
         </div>
+        
+        {/* Vertical Resize Handle */}
+        <VerticalResizeHandle
+          height={historyHeight}
+          minHeight={100}
+          maxHeight={600}
+          onResize={setHistoryHeight}
+        />
+        
+        {/* Spacer - fills remaining space */}
+        <div className="flex-1" />
 
         {/* Footer - Fixed at Bottom */}
         <div className="flex-shrink-0 border-t border-white/[0.06] p-3">
