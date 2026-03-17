@@ -10,7 +10,8 @@ export const metadata: Metadata = {
     description: 'A curated list of the best free online learning tools and resources for self-directed learners.',
     type: 'article',
     publishedTime: '2026-03-13',
-  },}
+  },
+}
 
 const blogPostingSchema = {
   "@context": "https://schema.org",
