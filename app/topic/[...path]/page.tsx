@@ -7,27 +7,64 @@ interface TopicPageProps {
   params: Promise<{ path: string[] }>
 }
 
+interface KnowledgeNode {
+  label: string
+  path: string
+  description?: string
+  children?: KnowledgeNode[]
+}
+
 export async function generateStaticParams() {
   return flattenAllPaths().map(p => ({ path: p.split('/') }))
 }
 
 function generateSeoDescription(label: string, shortDesc: string | undefined, breadcrumbText: string): string {
-  // Generate 120-160 character SEO descriptions with brand name
   const topic = label.toLowerCase()
   
   if (shortDesc) {
-    // Expand the short description into a full SEO description
     return `Explore ${topic}: ${shortDesc.toLowerCase()}. Dive deep with interactive, AI-powered articles and visual knowledge maps. Free on Tree of Knowledge.`
   }
   
-  // Generate based on breadcrumb context
   if (breadcrumbText.includes('>')) {
     const parent = breadcrumbText.split('>')[0].trim().toLowerCase()
     return `Learn about ${topic} within ${parent}. Explore interactive, AI-powered articles with infinite depth on every subtopic. Free on Tree of Knowledge.`
   }
   
-  // Top-level topic
   return `Explore ${topic} from fundamentals to advanced concepts. Interactive AI-powered encyclopedia with visual knowledge trees. Free on Tree of Knowledge.`
+}
+
+function generateSeoKeywords(node: KnowledgeNode, breadcrumbLabels: string[]): string[] {
+  const topic = node.label.toLowerCase()
+  const keywords: string[] = []
+  
+  // Primary topic keyword
+  keywords.push(topic)
+  
+  // Learning-related variations
+  keywords.push(`learn ${topic}`)
+  keywords.push(`${topic} online`)
+  keywords.push(`${topic} guide`)
+  keywords.push(`study ${topic}`)
+  
+  // Add child topic labels as keywords (subtopics)
+  if (node.children && node.children.length > 0) {
+    const childKeywords = node.children.slice(0, 6).map(c => c.label.toLowerCase())
+    keywords.push(...childKeywords)
+  }
+  
+  // Add parent context if nested
+  if (breadcrumbLabels.length > 1) {
+    const parent = breadcrumbLabels[breadcrumbLabels.length - 2].toLowerCase()
+    keywords.push(`${topic} ${parent}`)
+  }
+  
+  // Site-wide keywords (limit to keep focus on topic)
+  keywords.push('tree of knowledge')
+  keywords.push('AI encyclopedia')
+  keywords.push('free learning')
+  
+  // Remove duplicates and return
+  return [...new Set(keywords)]
 }
 
 export async function generateMetadata(props: TopicPageProps): Promise<Metadata> {
@@ -36,12 +73,15 @@ export async function generateMetadata(props: TopicPageProps): Promise<Metadata>
   if (!node) return {}
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://treeofknowledge.dev'
   const fullPath = path.join('/')
-  const breadcrumbText = path.map(s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')).join(' > ')
+  const breadcrumbLabels = path.map(s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))
+  const breadcrumbText = breadcrumbLabels.join(' > ')
   const seoDescription = generateSeoDescription(node.label, node.description, breadcrumbText)
+  const seoKeywords = generateSeoKeywords(node as KnowledgeNode, breadcrumbLabels)
   
   return {
     title: `${node.label} - Learn, Explore, Go Deeper`,
     description: seoDescription,
+    keywords: seoKeywords,
     openGraph: {
       title: `${node.label} - Tree of Knowledge`,
       description: seoDescription,
