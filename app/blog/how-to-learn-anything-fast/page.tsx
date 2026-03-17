@@ -26,7 +26,8 @@ export const metadata: Metadata = {
     description: 'Discover the proven techniques used by top learners to master any subject in record time.',
     type: 'article',
     publishedTime: '2026-03-15',
-  },}
+  },
+}
 
 const blogPostingSchema = {
   "@context": "https://schema.org",
