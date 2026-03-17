@@ -26,7 +26,8 @@ export const metadata: Metadata = {
     description: 'A complete framework for self-directed learning. Master any subject without a classroom.',
     type: 'article',
     publishedTime: '2026-03-11',
-  },}
+  },
+}
 
 const blogPostingSchema = {
   "@context": "https://schema.org",
