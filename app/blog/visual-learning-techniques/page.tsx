@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     description: 'Learn how visual representations of information dramatically improve comprehension and retention.',
     type: 'article',
     publishedTime: '2026-03-14',
-  },
+  },}
 
 
 const blogPostingSchema = {
@@ -54,7 +54,6 @@ const blogPostingSchema = {
     "@id": "https://treeofknowledge.dev/blog/visual-learning-techniques"
   }
 };
-}
 
 export default function VisualLearningTechniques() {
   return (
