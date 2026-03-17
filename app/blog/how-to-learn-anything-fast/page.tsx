@@ -2,6 +2,33 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 
+,
+  "publisher": {
+    "@type": "Organization",
+    "name": "NumberOneSon Software",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://treeofknowledge.dev/og-image.png"
+    }
+  },
+  "url": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast"
+  }
+};
+export const metadata: Metadata = {
+  title: 'How to Learn Anything Fast: The Science-Backed Method',
+  description: 'Discover the proven techniques used by top learners to master any subject in record time. From spaced repetition to active recall, learn the science of accelerated learning.',
+  keywords: ['how to learn fast', 'learning techniques', 'speed learning', 'study methods', 'accelerated learning', 'spaced repetition', 'active recall'],
+  openGraph: {
+    title: 'How to Learn Anything Fast: The Science-Backed Method',
+    description: 'Discover the proven techniques used by top learners to master any subject in record time.',
+    type: 'article',
+    publishedTime: '2026-03-15',
+  },
+
+
 const blogPostingSchema = {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
@@ -27,25 +54,12 @@ const blogPostingSchema = {
     "@id": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast"
   }
 };
-export const metadata: Metadata = {
-  title: 'How to Learn Anything Fast: The Science-Backed Method',
-  description: 'Discover the proven techniques used by top learners to master any subject in record time. From spaced repetition to active recall, learn the science of accelerated learning.',
-  keywords: ['how to learn fast', 'learning techniques', 'speed learning', 'study methods', 'accelerated learning', 'spaced repetition', 'active recall'],
-  openGraph: {
-    title: 'How to Learn Anything Fast: The Science-Backed Method',
-    description: 'Discover the proven techniques used by top learners to master any subject in record time.',
-    type: 'article',
-    publishedTime: '2026-03-15',
-  },
 }
 
 export default function HowToLearnAnythingFast() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }} />
       <main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
@@ -193,5 +207,5 @@ export default function HowToLearnAnythingFast() {
       </article>
     </main>
     </>
-  )
+)
 }
