@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     description: 'A complete framework for self-directed learning. Master any subject without a classroom.',
     type: 'article',
     publishedTime: '2026-03-11',
-  },
+  },}
 
 
 const blogPostingSchema = {
@@ -54,7 +54,6 @@ const blogPostingSchema = {
     "@id": "https://treeofknowledge.dev/blog/self-study-guide-any-subject"
   }
 };
-}
 
 export default function SelfStudyGuide() {
   return (
@@ -167,7 +166,7 @@ export default function SelfStudyGuide() {
           
           <h3>Read Actively</h3>
           <p>
-            Passive readingâ€”eyes moving over wordsâ€”produces almost no learning. Active reading means:
+            Passive readingâ��”eyes moving over wordsâ€”produces almost no learning. Active reading means:
           </p>
           <ul>
             <li>Asking questions before, during, and after reading</li>
