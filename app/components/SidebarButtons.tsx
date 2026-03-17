@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import dynamic from 'next/dynamic'
 
 const AmbientMusic = dynamic(() => import('./AmbientMusic'), { ssr: false })
@@ -102,6 +103,15 @@ export default function SidebarButtons() {
             </span>
           )}
         </button>
+
+        {/* Legal Links */}
+        <div className="flex items-center justify-center gap-3 pt-2 text-[9px] text-white/20">
+          <Link href="/privacy" className="hover:text-white/40 transition-colors">Privacy</Link>
+          <span>·</span>
+          <Link href="/terms" className="hover:text-white/40 transition-colors">Terms</Link>
+          <span>·</span>
+          <Link href="/accessibility" className="hover:text-white/40 transition-colors">Accessibility</Link>
+        </div>
       </div>
     </>
   )
