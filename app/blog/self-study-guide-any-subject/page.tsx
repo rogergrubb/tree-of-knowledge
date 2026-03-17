@@ -1,6 +1,32 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+
+const blogPostingSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "The Ultimate Self-Study Guide: How to Teach Yourself Any Subject",
+  "description": "A complete framework for self-directed learning. From choosing what to study to measuring your progress. Master any subject without a classroom.",
+  "datePublished": "2026-03-11",
+  "dateModified": "2026-03-11",
+  "author": {
+    "@type": "Organization",
+    "name": "NumberOneSon Software"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NumberOneSon Software",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://treeofknowledge.dev/og-image.png"
+    }
+  },
+  "url": "https://treeofknowledge.dev/blog/self-study-guide-any-subject",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://treeofknowledge.dev/blog/self-study-guide-any-subject"
+  }
+};
 export const metadata: Metadata = {
   title: 'The Ultimate Self-Study Guide: How to Teach Yourself Any Subject',
   description: 'A complete framework for self-directed learning. From choosing what to study to measuring your progress. Master any subject without a classroom.',
@@ -15,7 +41,12 @@ export const metadata: Metadata = {
 
 export default function SelfStudyGuide() {
   return (
-    <main className="min-h-screen bg-[#0a1424] text-white">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
+      />
+      <main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
           <Link href="/blog" className="text-green-400 hover:text-green-300 mb-4 inline-block">
@@ -276,5 +307,6 @@ export default function SelfStudyGuide() {
         </footer>
       </article>
     </main>
+    </>
   )
 }
