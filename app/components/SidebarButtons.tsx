@@ -48,7 +48,7 @@ export default function SidebarButtons() {
                 <strong className="text-[#f0ece4]">This is 100% free.</strong> No paywall. No account required.
               </p>
               <p className="text-[10px] text-white/25 mt-1.5 leading-relaxed">
-                Every topic costs real AI tokens. If this helped you learn—
+                Every branch costs real AI tokens. Help the tree grow—
               </p>
             </div>
             <a
@@ -59,7 +59,7 @@ export default function SidebarButtons() {
                 bg-gradient-to-r from-[#d4a853] to-[#e8c56a] hover:from-[#e8c56a] hover:to-[#f0d888]
                 transition-all"
             >
-              ☕ Buy Me a Coffee - $5
+              💧 Water the Tree — $5
             </a>
             <button
               onClick={() => setSupportExpanded(false)}
