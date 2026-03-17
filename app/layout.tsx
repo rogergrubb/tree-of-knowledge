@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   },
   description: 'Explore all human knowledge as an interactive, AI-powered tree. From quantum physics to ancient history - infinite depth on every topic. Free for everyone.',
   keywords: [
-    'interactive encyclopedia', 'AI learning tool', 'knowledge map', 'visual learning',
-    'study guide', 'free encyclopedia', 'AI tutor', 'explore topics', 'homework help',
-    'research tool', 'knowledge tree', 'learn anything', 'study companion',
+    'tree of knowledge', 'knowledge tree', 'interactive encyclopedia', 'AI learning tool',
+    'knowledge map', 'visual learning', 'study guide', 'free encyclopedia', 'AI tutor',
+    'explore topics', 'homework help', 'research tool', 'learn anything', 'study companion',
     'AI study companion', 'visual encyclopedia', 'deep research tool',
   ],
   authors: [{ name: 'NumberOneSon Software' }],
