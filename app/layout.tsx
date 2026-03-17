@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tree-of-knowledge-roger-grubbs-projects-2e0adcba.vercel.app'
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://treeofknowledge.dev'
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
