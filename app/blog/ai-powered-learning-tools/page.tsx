@@ -12,7 +12,6 @@ export const metadata: Metadata = {
     publishedTime: '2026-03-12',
   },}
 
-
 const blogPostingSchema = {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
