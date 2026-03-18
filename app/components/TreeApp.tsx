@@ -5,7 +5,6 @@ import { TreeCanvas } from './TreeCanvas'
 import { WikiPanel } from './WikiPanel'
 import { HistoryPanel, useHistory, HistoryItem } from './HistoryPanel'
 import { ResizeHandle, usePanelWidth } from './ResizeHandle'
-import { VerticalResizeHandle, usePanelHeight } from './VerticalResizeHandle'
 import SidebarButtons from './SidebarButtons'
 import { KnowledgeNode, generateSubtopics, generateArticle, searchKnowledge } from '../lib/ai'
 import { SEED_TREE, ROOT_DATA, BRANCH_DATA } from '../data/seedTree'
@@ -78,7 +77,6 @@ export default function TreeApp() {
   const { width: rightWidth, setWidth: setRightWidth } = usePanelWidth('tok_right_width', 380, 300, 600)
   
   // History panel height (resizable)
-  const { height: historyHeight, setHeight: setHistoryHeight } = usePanelHeight('tok_history_height', 300, 100, 600)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -337,10 +335,9 @@ export default function TreeApp() {
           </div>
         </div>
 
-        {/* History Panel - Resizable Height */}
+        {/* History Panel - Auto Height */}
         <div 
-          className="flex-shrink-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
-          style={{ height: historyHeight }}
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
         >
           <HistoryPanel 
             history={history}
@@ -351,16 +348,7 @@ export default function TreeApp() {
           />
         </div>
         
-        {/* Vertical Resize Handle */}
-        <VerticalResizeHandle
-          height={historyHeight}
-          minHeight={100}
-          maxHeight={600}
-          onResize={setHistoryHeight}
-        />
         
-        {/* Spacer - fills remaining space */}
-        <div className="flex-1" />
 
         {/* Footer - Fixed at Bottom */}
         <div className="flex-shrink-0 border-t border-white/[0.06] p-3">
