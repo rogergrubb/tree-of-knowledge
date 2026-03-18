@@ -1,22 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-
-,
-  "publisher": {
-    "@type": "Organization",
-    "name": "NumberOneSon Software",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://treeofknowledge.dev/og-image.png"
-    }
-  },
-  "url": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast"
-  }
-};
 export const metadata: Metadata = {
   title: 'How to Learn Anything Fast: The Science-Backed Method',
   description: 'Discover the proven techniques used by top learners to master any subject in record time. From spaced repetition to active recall, learn the science of accelerated learning.',
