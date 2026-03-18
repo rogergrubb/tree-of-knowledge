@@ -1,22 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-
-,
-  "publisher": {
-    "@type": "Organization",
-    "name": "NumberOneSon Software",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://treeofknowledge.dev/og-image.png"
-    }
-  },
-  "url": "https://treeofknowledge.dev/blog/visual-learning-techniques",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://treeofknowledge.dev/blog/visual-learning-techniques"
-  }
-};
 export const metadata: Metadata = {
   title: 'Visual Learning Techniques: How Knowledge Maps Accelerate Understanding',
   description: 'Learn how visual representations of information dramatically improve comprehension, retention, and recall. Master mind mapping, concept mapping, and knowledge trees.',
