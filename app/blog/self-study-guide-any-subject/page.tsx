@@ -1,22 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-
-,
-  "publisher": {
-    "@type": "Organization",
-    "name": "NumberOneSon Software",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://treeofknowledge.dev/og-image.png"
-    }
-  },
-  "url": "https://treeofknowledge.dev/blog/self-study-guide-any-subject",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://treeofknowledge.dev/blog/self-study-guide-any-subject"
-  }
-};
 export const metadata: Metadata = {
   title: 'The Ultimate Self-Study Guide: How to Teach Yourself Any Subject',
   description: 'A complete framework for self-directed learning. From choosing what to study to measuring your progress. Master any subject without a classroom.',
