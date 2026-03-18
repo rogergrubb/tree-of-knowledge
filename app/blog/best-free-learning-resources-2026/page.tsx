@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2026-03-13',
   },
-}
+};
 
 const blogPostingSchema = `{
   "@context": "https://schema.org",
@@ -42,7 +42,7 @@ const blogPostingSchema = `{
 export default function BestFreeLearningResources() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: blogPostingSchema }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: blogPostingSchema }}></script>
       <main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
