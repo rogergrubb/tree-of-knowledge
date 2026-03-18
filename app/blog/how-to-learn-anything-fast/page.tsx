@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 }
 
-const blogPostingSchema = {
+const blogPostingSchema = `{
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "How to Learn Anything Fast: The Science-Backed Method",
@@ -37,12 +37,12 @@ const blogPostingSchema = {
     "@type": "WebPage",
     "@id": "https://treeofknowledge.dev/blog/how-to-learn-anything-fast"
   }
-};
+}`
 
 export default function HowToLearnAnythingFast() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: blogPostingSchema }} />
       <main className="min-h-screen bg-[#0a1424] text-white">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-8">
